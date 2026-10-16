@@ -25,7 +25,7 @@ Shared project: [SlugNav](https://supabase.com/dashboard/project/sfpruukagfcjkkh
 1. Copy `.env.example` to `.env.local`. The project URL is already filled in.
 2. Get the **publishable key** (`sb_publishable_...`) from the project's Connect
    dialog or API Keys settings and set `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-3. Restart Expo, then run `npm run check:backend` to verify the connection.
+3. Restart Expo, then run `npm run check:backend` to verify the URL and key.
 
 Local environment files are ignored by Git. `EXPO_PUBLIC_` values are bundled
 into the app: never use a secret/service-role key, database password, or access
@@ -45,10 +45,10 @@ feature work. Native sessions use AsyncStorage, which is not encrypted storage.
 | `npm run ios` / `npm run android` | Open an installed simulator/emulator |
 | `npm run typecheck` | Check TypeScript |
 | `npm run export` | Check production bundling for iOS, Android, and web |
-| `npm run check:backend` | Check the hosted Auth and Data APIs without changing data |
+| `npm run check:backend` | Verify the URL/key against the hosted Auth API |
 
 Bundling does not test native device behavior. The backend connection check does
-not test table permissions.
+not test database access or table permissions.
 
 ## Working on the project
 

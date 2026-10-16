@@ -21,21 +21,20 @@ try {
     throw new Error('Use the project publishable key (sb_publishable_), never a secret or service-role key.');
   }
 
-  for (const [name, path] of [['Auth', '/auth/v1/settings'], ['Data', '/rest/v1/']]) {
-    const response = await fetch(new URL(path, url), {
-      headers: { apikey: key },
-      signal: AbortSignal.timeout(10_000),
-    });
+  // The Data API's schema endpoint requires a server key. Check the public
+  // Auth endpoint here; verify database access alongside the actual tables.
+  const response = await fetch(new URL('/auth/v1/settings', url), {
+    headers: { apikey: key },
+    signal: AbortSignal.timeout(10_000),
+  });
 
-    if (!response.ok) {
-      throw new Error(`${name} API returned HTTP ${response.status}. Check the project URL/key and that the project is running.`);
-    }
-
-    await response.json();
-    console.log(`${name} API: reachable`);
+  if (!response.ok) {
+    throw new Error(`Auth API returned HTTP ${response.status}. Check the project URL/key and that the project is running.`);
   }
 
-  console.log('Connection checks passed. Table permissions need separate authenticated tests when tables are added.');
+  await response.json();
+  console.log('Supabase Auth API: reachable. Project URL and publishable key accepted.');
+  console.log('Database access and row-level security need separate tests when tables are added.');
 } catch (error) {
   console.error(error instanceof Error ? error.message : 'Supabase connection check failed.');
   process.exitCode = 1;
