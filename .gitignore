@@ -1,0 +1,33 @@
+# Dependencies and generated output
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+*.tsbuildinfo
+coverage/
+
+# Generated native projects (managed by Expo)
+/ios/
+/android/
+.kotlin/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.jks
+*.p8
+*.p12
+*.pem
+*.key
+*.mobileprovision
+
+# Supabase local state
+supabase/.temp/
+supabase/.branches/
+
+# Editor, OS, and debug output
+.DS_Store
+npm-debug.*
+.metro-health-check*
