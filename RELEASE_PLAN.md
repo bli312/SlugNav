@@ -1,9 +1,9 @@
 # SlugNav - Initial Release Plan
 
-**Team:** SlugNavDev\
-**Release #:** 1\
-**Finalized Release Date:** 12/08/2026\
-**Revision 1:** 10/12/2026
+**Team:** SlugNavDev  
+**Release:** 1  
+**Finalized Release Date:** 12/08/2026  
+**Revision 2:** 10/13/2026  
 
 ---
 
@@ -12,13 +12,10 @@
 - Automatically get classes from MyUCSC
 - Have an interactive map with class locations, amenities, etc.
 - Be able to find routes from one point to another, with reliable time estimates
-- Have users able to upload pictures and other information, with a point
-  system/leaderboard for contributions
-- Have a feature to track location to find hidden/popular routes
+- Securely manage user data
 - Be able to handle thousands of concurrent users
-- Be able to handle uploaded videos
-- Be able to securely manage user data
-- Have a feature to map out the insides of buildings (stretch)
+- Have users able to upload pictures and other information, with a point system/leaderboard for contributions
+- Have a feature to track location to find hidden/popular routes
 - Automatically add location updates based on Canvas and Google Calendar
 
 ---
