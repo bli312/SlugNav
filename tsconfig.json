@@ -4,9 +4,20 @@
     "jsx": "react",
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["**/*.md", "node_modules", ".husky", ".vscode"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "**/*.md",
+    "node_modules",
+    ".husky",
+    ".vscode"
+  ],
+  "extends": "expo/tsconfig.base"
 }
