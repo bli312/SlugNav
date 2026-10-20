@@ -12,8 +12,16 @@ export default defineConfig([
   },
   {
     files: ["**/*.{js,ts}"],
-    languageOptions: { sourceType: "commonjs" },
+    languageOptions: {
+      sourceType: "commonjs",
+    },
   },
-  [globalIgnores(["**/*.md"])],
+  {
+    files: ["scripts/check-supabase.mjs"],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  [globalIgnores(["**/*.md", "./node_modules/*", "./.husky/*", "./.vscode/*"])],
   tseslint.configs.recommended,
 ]);

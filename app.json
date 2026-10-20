@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "SlugNav",
+    "slug": "slugnav",
+    "version": "0.1.0",
+    "scheme": "slugnav",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "platforms": ["ios", "android", "web"],
+    "web": {
+      "output": "single"
+    },
+    "plugins": ["expo-router"]
+  }
+}
