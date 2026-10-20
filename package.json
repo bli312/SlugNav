@@ -1,9 +1,25 @@
 {
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@typescript-eslint/eslint-plugin": "^8.72.0",
+    "@typescript-eslint/parser": "^8.72.0",
     "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.7",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-native": "^5.0.0",
     "globals": "^17.13.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.9.10",
     "typescript-eslint": "^8.72.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,html}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
   },
   "name": "slugnav",
   "version": "1.0.0",
@@ -85,7 +101,10 @@
     "yocto-queue": "^0.1.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "husky",
+    "lint": "eslint .",
+    "format": "prettier --write **/*.{js,jsx,ts,tsx,json}",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",
