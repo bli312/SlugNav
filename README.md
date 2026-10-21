@@ -15,8 +15,8 @@ npm start
 ```
 
 Scan the QR code with Expo Go on a phone on the same network, or run
-`npm run web` for a browser preview. The starter screen works without Supabase
-configuration so you can work on UI immediately.
+`npm run web` for a browser preview. Google sign-in works on web or a native
+development build; Expo Go can only preview the login screen.
 
 ## Connecting to Supabase:
 
@@ -25,7 +25,7 @@ Shared project: [SlugNav](https://supabase.com/dashboard/project/sfpruukagfcjkkh
 1. Copy `.env.example` to `.env.local`. The project URL is already filled in.
 2. Get the **publishable key** (`sb_publishable_...`) from the project's Connect
    dialog or API Keys settings and set `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-3. Restart Expo, then run `npm run check:backend` to verify the URL and key.
+3. Restart Expo to load the environment settings.
 
 Local environment files are ignored by Git. `EXPO_PUBLIC_` values are bundled
 into the app: never use a secret/service-role key, database password, or access
@@ -33,8 +33,26 @@ token here. Running the app only needs the project URL and publishable key.
 
 Use `getSupabase()` from `@/lib/supabase` for auth and database requests. It
 requires the environment configuration above. Session persistence and native
-foreground refresh are configured; login screens and auth callbacks are still
-feature work. Native sessions use AsyncStorage, which is not encrypted storage.
+foreground refresh are configured. Native sessions use AsyncStorage, which is
+not encrypted storage.
+
+### Google sign-in
+
+These settings are shared; teammates only need the local environment setup above.
+
+- Google OAuth: **External** audience, **Web application** client. See the
+  [official setup guide](https://supabase.com/docs/guides/auth/social-login/auth-google).
+  Google callback: `https://sfpruukagfcjkkhtswlo.supabase.co/auth/v1/callback`.
+- Supabase: Google enabled; email and anonymous sign-ins disabled; new-user
+  signups enabled. Keep **Skip nonce checks** and **Allow users without an email**
+  off. Google client ID/secret stay in Supabase; no extra app environment variables.
+- Development Site URL: `http://localhost:8081`. Allowed app redirects:
+  `http://localhost:8081/auth/callback` and `slugnav://auth/callback`.
+
+The [SQL migration](supabase/migrations/20261016000000_ucsc_google_auth.sql) defines
+the UCSC signup restrictions. Apply it, then enable **Before User Created** under
+**Authentication → Auth Hooks**, using **Postgres**, schema `public`, and function
+`before_ucsc_user_created`.
 
 ## Useful Terminal Commands
 
@@ -45,11 +63,9 @@ feature work. Native sessions use AsyncStorage, which is not encrypted storage.
 | `npm run ios` / `npm run android` | Open an installed simulator/emulator |
 | `npm run typecheck` | Check TypeScript |
 | `npm run export` | Check production bundling for iOS, Android, and web |
-| `npm run check:scripts` | Check if scripts pass linting/formatting \(runs before committing/pushing changes in Visual Studio Code IDE\) |
-| `npm run check:backend` | Verify the URL/key against the hosted Auth API |
+| `npm run check:scripts` | Run TypeScript, ESLint, and tests |
 
-Bundling does not test native device behavior. The backend connection check does
-not test database access or table permissions.
+Bundling does not test native device behavior.
 
 ## Working on the Project
 
@@ -58,8 +74,8 @@ not test database access or table permissions.
 - Work on feature branches and open PRs into `main`.
 - Use `npx expo install <package>` for native dependencies. Commit `package.json`
   and `package-lock.json` together; teammates install with `npm ci`.
-- Run type-checking and export before review. The tooling PR can run these in CI
-  and add the team's linter/formatter. CI and linting are not configured yet.
+- Run `npm run check:scripts` and `npm run export` before review. The checks cover
+  TypeScript, ESLint, and tests; GitHub CI is not configured yet.
 - Database contributors can use the Supabase CLI for versioned SQL migrations.
   Add tables, explicit permissions, and row-level security policies together;
   test access as different users before deploying to the shared project. No

@@ -12,9 +12,6 @@
     "typescript",
     "typescriptreact"
   ],
-  "eslint.options": {
-    "ignorePath": ".gitignore"
-  },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.insertSpaces": true,

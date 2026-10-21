@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
+import { getRandomValues } from "expo-crypto";
 import { Platform } from "react-native";
 
 // Expo replaces these exact property references when it builds the app.
@@ -41,12 +42,21 @@ export function getSupabase() {
     );
   }
 
+  // Hermes needs a secure random source for Supabase's PKCE verifier.
+  if (Platform.OS !== "web" && !globalThis.crypto?.getRandomValues) {
+    Object.defineProperty(globalThis, "crypto", {
+      configurable: true,
+      value: { ...globalThis.crypto, getRandomValues },
+    });
+  }
+
   client = createClient(url, publishableKey, {
     auth: {
       ...(Platform.OS !== "web" ? { storage: AsyncStorage } : {}),
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
+      flowType: "pkce",
     },
   });
 
