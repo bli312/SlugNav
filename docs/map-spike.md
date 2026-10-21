@@ -49,4 +49,5 @@ Ian's OpenStreetMap + Leaflet foundation already renders the campus map on `main
 ## Open questions
 
 - Is the location text in the public class catalog consistent enough to match automatically? (Depends on the data spike, #11.)
+- When a user searches for a building or classroom, should we search our own `buildings` table, an OpenStreetMap place search like Nominatim, or both (our table first for classroom buildings, then OSM for anything we haven't stored)? Trade-offs: our table knows catalog names and room numbers but only covers what we add; OSM covers every place but not catalog names; Nominatim has free-use limits **(verify)**. Relates to search (1.2b).
 - SC Metro's API (found by Ian) fits bus story 4.1 and is out of scope for this spike.
