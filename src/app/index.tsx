@@ -1,5 +1,7 @@
+import { Link } from "expo-router";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 
 const CLASSROOM_LOCATION = {
@@ -36,13 +38,29 @@ const leafletHTML = `
 // using openstreetmap as map info and leaflet as wrapper/display
 // webview to cheat out a display
 export default function App() {
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={styles.container}>
       <WebView originWhitelist={["*"]} source={{ html: leafletHTML }} />
+      <Link href="/classes" asChild>
+        <Pressable style={[styles.classesButton, { top: insets.top + 12 }]}>
+          <Text style={styles.classesButtonText}>Classes</Text>
+        </Pressable>
+      </Link>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  classesButton: {
+    position: "absolute",
+    right: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: "#003c6c",
+  },
+  classesButtonText: { color: "#fff", fontSize: 15, fontWeight: "600" },
 });
