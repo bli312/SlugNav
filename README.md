@@ -9,14 +9,23 @@ Use **Node 22.13+ within Node 22**, **npm 10**, and **Expo Go compatible with SD
 57**. `.nvmrc` selects Node 22 if you use nvm. Docker and the Supabase CLI are not
 required to run the app.
 
+Set up `.env.local` using [Connecting to Supabase](#connecting-to-supabase), then
+install dependencies and start Expo:
+
 ```sh
 npm ci
 npm start
 ```
 
-Scan the QR code with Expo Go on a phone on the same network, or run
-`npm run web` for a browser preview. Google sign-in works on web or a native
-development build; Expo Go can only preview the login screen.
+Scan the QR code with Expo Go on a phone on the same Wi-Fi. Before signing in
+for the first time, register your [Expo Go callback](#expo-go-callback).
+
+If the phone cannot connect or Supabase shows "Sorry, you have been blocked,"
+stop Expo with Ctrl+C and try `npm start -- --tunnel`. Both devices need internet
+access. The tunnel helper is included in `npm ci`; no global installation is
+needed. Register the new callback URL when switching to a tunnel.
+
+Use `npm run web` for a browser preview.
 
 ## Connecting to Supabase:
 
@@ -38,7 +47,7 @@ not encrypted storage.
 
 ### Google sign-in
 
-These settings are shared; teammates only need the local environment setup above.
+The Google provider and signup restrictions are shared across the team.
 
 - Google OAuth: **External** audience, **Web application** client. See the
   [official setup guide](https://supabase.com/docs/guides/auth/social-login/auth-google).
@@ -54,11 +63,39 @@ the UCSC signup restrictions. Apply it, then enable **Before User Created** unde
 **Authentication → Auth Hooks**, using **Postgres**, schema `public`, and function
 `before_ucsc_user_created`.
 
+### Expo Go callback
+
+Each teammate running their own Metro server registers their own callback.
+The same steps apply to LAN and tunnel URLs:
+
+1. Copy the full `exp://…` URL shown beside the terminal QR code and append
+   `/--/auth/callback`, preserving any port. For example:
+
+   ```text
+   Metro URL:    exp://abc123.exp.direct
+   Callback URL: exp://abc123.exp.direct/--/auth/callback
+   ```
+
+2. Open [Supabase URL Configuration](https://supabase.com/dashboard/project/sfpruukagfcjkkhtswlo/auth/url-configuration)
+   → **Redirect URLs → Add URL**, paste your callback, and save. Keep the other
+   teammates' URLs. Google Console and `.env.local` need no callback changes.
+
+Register it once and update it only if Metro shows a different URL, such as
+after an IP/port change or switching between LAN and tunnel mode. Tunnel
+addresses normally persist for the same project, Expo account, and port while
+`.expo/` is retained. Use exact callbacks so the allow list covers the team's
+servers.
+
+For a stable callback across devices, Expo recommends
+[development builds](https://docs.expo.dev/guides/authentication/). Installed
+SlugNav builds use the existing `slugnav://auth/callback` redirect.
+
 ## Useful Terminal Commands
 
 | Command | Purpose |
 | --- | --- |
-| `npm start` | Start Expo for a phone |
+| `npm start` | Start Expo Go over the local network (default) |
+| `npm start -- --tunnel` | Fallback for connection problems or blocked LAN callbacks |
 | `npm run web` | Open the web preview |
 | `npm run ios` / `npm run android` | Open an installed simulator/emulator |
 | `npm run typecheck` | Check TypeScript |

@@ -4,6 +4,7 @@ import {
   CryptoEncoding,
   digestStringAsync,
 } from "expo-crypto";
+import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import { Platform } from "react-native";
 
@@ -15,23 +16,16 @@ import {
 import { getSupabase } from "./supabase";
 
 export function getAuthRedirectUrl(): string {
-  return Platform.OS === "web"
-    ? new URL(AUTH_CALLBACK_PATH, window.location.origin).href
+  if (Platform.OS === "web") {
+    return new URL(AUTH_CALLBACK_PATH, window.location.origin).href;
+  }
+  return Constants.executionEnvironment === ExecutionEnvironment.StoreClient
+    ? Linking.createURL(AUTH_CALLBACK_PATH)
     : NATIVE_AUTH_CALLBACK;
 }
 
-export const isExpoGo =
-  Platform.OS !== "web" &&
-  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-
 /** Returns a native callback URL, or null when cancelled / redirecting on web. */
 export async function openGoogleSignIn(): Promise<string | null> {
-  if (isExpoGo) {
-    throw new Error(
-      "Google sign-in needs a development build on phones. Use the web app to test it now.",
-    );
-  }
-
   const redirectTo = getAuthRedirectUrl();
   const { data, error } = await getSupabase().auth.signInWithOAuth({
     provider: "google",

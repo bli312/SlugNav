@@ -9,14 +9,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { isExpoGo } from "@/lib/google-auth";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function LoginScreen() {
   const { signIn, busy, error } = useAuth();
   const configured = isSupabaseConfigured();
-  const disabled = busy || !configured || isExpoGo;
+  const disabled = busy || !configured;
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -59,12 +58,6 @@ export default function LoginScreen() {
         {!configured && (
           <Text style={styles.note}>
             Sign-in is not configured in this app yet.
-          </Text>
-        )}
-        {__DEV__ && isExpoGo && (
-          <Text style={styles.note}>
-            To test Google sign-in, open the web app or use an Expo development
-            build.
           </Text>
         )}
       </View>
