@@ -17,11 +17,21 @@ export default defineConfig([
     },
   },
   {
-    files: ["scripts/check-supabase.mjs"],
+    files: ["tests/**/*.mjs"],
     languageOptions: {
       globals: globals.node,
     },
   },
-  [globalIgnores(["**/*.md", "./node_modules/*", "./.husky/*", "./.vscode/*"])],
+  [
+    globalIgnores([
+      "**/*.md",
+      "./node_modules/*",
+      "./.husky/*",
+      "./.vscode/*",
+      "dist/**",
+      ".expo/**",
+      "web-build/**",
+    ]),
+  ],
   tseslint.configs.recommended,
 ]);

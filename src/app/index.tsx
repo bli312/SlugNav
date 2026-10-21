@@ -1,8 +1,10 @@
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Button, Platform, StyleSheet, Text, View } from "react-native";
 import { WebView } from "react-native-webview";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { useAuth } from "@/providers/auth-provider";
 
 const CLASSROOM_LOCATION = {
   latitude: 36.99937065610728,
@@ -38,29 +40,48 @@ const leafletHTML = `
 // using openstreetmap as map info and leaflet as wrapper/display
 // webview to cheat out a display
 export default function App() {
-  const insets = useSafeAreaInsets();
+  const { session, signOut, busy, error } = useAuth();
+  const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      <WebView originWhitelist={["*"]} source={{ html: leafletHTML }} />
-      <Link href="/classes" asChild>
-        <Pressable style={[styles.classesButton, { top: insets.top + 12 }]}>
-          <Text style={styles.classesButtonText}>Classes</Text>
-        </Pressable>
-      </Link>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.account}>
+        <View style={styles.identity}>
+          <Text accessibilityRole="header" style={styles.title}>
+            SlugNav
+          </Text>
+          <Text numberOfLines={1}>{session?.user.email}</Text>
+        </View>
+        <Button title="Classes" onPress={() => router.push("/classes")} />
+        <Button
+          title="Sign out"
+          disabled={busy}
+          onPress={() => void signOut()}
+        />
+      </View>
+      {error && (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {error}
+        </Text>
+      )}
+      {Platform.OS === "web" ? (
+        <iframe
+          title="UCSC campus map"
+          sandbox="allow-scripts"
+          srcDoc={leafletHTML}
+          style={{ flex: 1, width: "100%", border: 0 }}
+        />
+      ) : (
+        <WebView originWhitelist={["*"]} source={{ html: leafletHTML }} />
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  classesButton: {
-    position: "absolute",
-    right: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: "#003c6c",
-  },
-  classesButtonText: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  account: { flexDirection: "row", alignItems: "center", gap: 16, padding: 16 },
+  identity: { flex: 1, gap: 4 },
+  title: { fontSize: 22, fontWeight: "700" },
+  error: { color: "#A12828", paddingHorizontal: 16, paddingBottom: 12 },
 });
