@@ -40,12 +40,12 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "export": "expo export",
-    "check": "npm run typecheck && npm run lint && npm test",
     "check:backend": "node --env-file=.env.local scripts/check-supabase.mjs",
-    "prepare": "husky",
+    "check:scripts": "npm run typecheck && npm run lint && npm test",
     "lint": "eslint .",
     "format": "prettier --write **/*.{js,jsx,ts,tsx,json}",
-    "test": "node --test"
+    "test": "node --test",
+    "prepare": "husky"
   },
   "dependencies": {
     "@maplibre/maplibre-react-native": "^11.5.0",
