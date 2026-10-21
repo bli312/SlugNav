@@ -2,7 +2,7 @@
 
 **Team Name:** SlugNavDev  
 **Sprint Completion Date:** 10/21/26  
-**Revision:** 2 (updated after TA feedback)  
+**Revision:** 4 (search, full class catalog, and classroom locations moved to Sprint 2)  
 **Week 1:** 10/13/26
 
 [Scrum poker](https://www.scrumpoker-online.org/en/room/45959815/scrum-poker)
@@ -31,19 +31,21 @@ As a UCSC student, I want to sign in and land on a simple home screen with clear
 
 ### [1.2]
 
-As a UCSC student, I want to search for my classes and see their building and room, so that I can quickly see where each of my classes is.
+As a UCSC student, I want to see a list of classes with their building and room, so that I can check where each class meets.
 
-- [ ] Classes table + API (create, read, update, delete) with seed/mock data **(2 SP) (Noah)**
-- [ ] Class list and search screen (build against mock data first) **(2 SP) (Dan)**
+- [ ] Classes table + API with sample data (read required; create/update/delete if time) **(2 SP) (Noah)**
+- [ ] Class list screen (build against mock data first) **(2 SP) (Dan)**
 - [ ] Connect the app to the backend **(1 SP) (Dan + Noah)**
 
 **Total for 1.2: 5 SP**
+
+> Searching, the full UCSC class catalog, and classroom locations on a map are Sprint 2.
 
 ### [1.3] (SPIKE this sprint, story moves to Sprint 2)
 
 As a UCSC student, I want my classes to load in automatically, so that I don't have to get each one from MyUCSC.
 
-- [ ] **SPIKE:** Research how to safely get class data (MyUCSC, Canvas calendar, .ics / Google Calendar export). Deliver a short written recommendation. **(2 SP) (Noah)**
+- [ ] **SPIKE:** How to pull in all UCSC class data, including building and room. Public class catalog first, personal MyUCSC login later. Short written recommendation. **(2 SP) (Noah)**
 
 **Total for 1.3 spike: 2 SP**
 
@@ -57,22 +59,26 @@ As a UCSC student, I want my account and class data to be visible only to me, so
 
 ### Map (SPIKE this sprint, integration moves to Sprint 2)
 
-- [ ] **SPIKE:** Research map options (Google Maps vs. alternatives) and how to handle classrooms Google Maps can't identify. Short written recommendation. **(1 SP) (Dan)**
+- [ ] **SPIKE:** How to show a class's location on a map (map options, where building coordinates come from, rooms maps can't identify). Short written recommendation. **(1 SP) (Dan)**
 
 **Total for map spike: 1 SP**
 
 ### Team tasks
 
-- [ ] Create the GitHub sprint board **(1 SP) (Dan)**
+- [x] Create the GitHub sprint board **(1 SP) (Dan)**
 
 **Total for team tasks: 1 SP**
+
+**Sprint total: 12 + 5 + 2 + 1 + 1 + 1 = 22 SP**
 
 ---
 
 ## Moved to Sprint 2
 
-- [1.2b] Integrate map and show class locations (based on the map spike)
-- [1.3] Import classes automatically (based on the MyUCSC/Canvas spike)
+- [1.2b] Search classes
+- [1.2c] Import the full UCSC class catalog (based on the data spike)
+- [1.2d] Show class locations on the map (based on the map spike)
+- [1.3] Load a student's own classes automatically (based on the data spike)
 
 ## Team Roles
 
@@ -83,10 +89,10 @@ As a UCSC student, I want my account and class data to be visible only to me, so
 
 ## Initial Task Assignment
 
-- **Dan:** Class list/search screen, map spike, sprint board
-- **Noah:** [1.1] Backend/database
+- **Dan:** Class list screen, map spike
+- **Noah:** [1.1] Backend/database, classes table + API, data spike
 - **Ian:** Set up repository development environment with Deno/Node (Formatter, Lint), React, Expo + React Native, Set up basic app functionality with Expo + React
-- **Leo:** [1.1] Create login functionality
+- **Leo:** [1.1] Create login functionality, login page and home page, privacy requirements
 
 ## Initial Scrum Board
 
