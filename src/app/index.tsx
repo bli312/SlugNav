@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/providers/auth-provider";
 import LeafletDisplay from "@/components/leaflet/LeafletDisplay";
 
-export default function App() {
+export default function CampusMap() {
   const { session, signOut, busy, error } = useAuth();
 
   return (
