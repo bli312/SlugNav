@@ -1,4 +1,4 @@
-import { LeafletPopup } from "./LeafletPopup";
+import { LeafletPopup, loadPopup } from "./LeafletPopup";
 
 const STARTING_LOCATION = {
   latitude: 36.99937065610728,
@@ -76,9 +76,7 @@ export default class LeafletMap {
     return this.markers
       .map((marker) => {
         let script = `L.marker([${marker.latitude}, ${marker.longitude}]).addTo(window.map)`;
-        if (marker.popup) {
-          script += `.bindPopup("${marker.popup.title}")`; // TODO expand on popup
-        }
+        if (marker.popup) script += `.bindPopup(${loadPopup(marker.popup)})`;
         return script + ";";
       })
       .join("\n");
