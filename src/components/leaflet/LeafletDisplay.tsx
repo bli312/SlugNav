@@ -1,6 +1,7 @@
 import React from "react";
 import { Platform, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
+
 import LeafletMap from "./LeafletMap";
 import { createPopup } from "./LeafletPopup";
 
@@ -24,11 +25,6 @@ map.createMarker(
     "Stevenson Academics Building - Room 150",
     undefined,
   ),
-);
-map.createMarker(
-  36.994817863299645,
-  -122.06576289755365,
-  createPopup(undefined, undefined, undefined),
 );
 
 export default function LeafletDisplay() {

@@ -1,12 +1,12 @@
 export interface LeafletPopup {
-  title: string | undefined;
-  text: string | undefined;
+  title: string;
+  text: string;
   image: string | undefined;
 }
 
 export function createPopup(
-  titlePopup: string | undefined,
-  textPopup: string | undefined,
+  titlePopup: string,
+  textPopup: string,
   imagePopup: string | undefined,
 ): LeafletPopup {
   const popup: LeafletPopup = {

@@ -4,12 +4,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/providers/auth-provider";
 import LeafletDisplay from "@/components/leaflet/LeafletDisplay";
+import Searchbar from "@/components/Searchbar";
 
 export default function CampusMap() {
   const { session, signOut, busy, error } = useAuth();
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Navigation Bar (NavBar) */}
       <View style={styles.account}>
         <View style={styles.identity}>
           <Text accessibilityRole="header" style={styles.title}>
@@ -28,7 +30,10 @@ export default function CampusMap() {
           {error}
         </Text>
       )}
+
+      {/* Leaflet Map Display */}
       <LeafletDisplay />
+      <Searchbar />
     </SafeAreaView>
   );
 }

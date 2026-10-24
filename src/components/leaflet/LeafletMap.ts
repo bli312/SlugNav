@@ -1,21 +1,18 @@
 import { LeafletPopup, loadPopup } from "./LeafletPopup";
 
-const STARTING_LOCATION = {
-  latitude: 36.99937065610728,
-  longitude: -122.0616947376665,
-};
+export interface Marker {
+  latitude: number;
+  longitude: number;
+  popup?: LeafletPopup;
+}
 
 export default class LeafletMap {
+  STARTING_LOCATION = {
+    latitude: 36.99937065610728,
+    longitude: -122.0616947376665,
+  };
   leafletHTML: string;
-  private markers: Array<{
-    latitude: number;
-    longitude: number;
-    popup?: LeafletPopup;
-  }> = new Array<{
-    latitude: number;
-    longitude: number;
-    popup?: LeafletPopup;
-  }>();
+  private markers: Array<Marker> = new Array<Marker>();
 
   constructor() {
     this.leafletHTML = this.createHTML();
@@ -43,7 +40,7 @@ export default class LeafletMap {
           <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
           <script>
             window.map = L.map("map").setView(
-              [${STARTING_LOCATION.latitude}, ${STARTING_LOCATION.longitude}],
+              [${this.STARTING_LOCATION.latitude}, ${this.STARTING_LOCATION.longitude}],
               18
             );
             L.tileLayer(
