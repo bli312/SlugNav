@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Button, FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -33,6 +34,7 @@ const data: Array<Marker> = [
 
 export default function CampusMap() {
   const { session, signOut, busy, error } = useAuth();
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [filteredMarkers, setFilteredMarkers] = useState(data);
 
@@ -57,6 +59,7 @@ export default function CampusMap() {
           </Text>
           <Text numberOfLines={1}>{session?.user.email}</Text>
         </View>
+        <Button title="Classes" onPress={() => router.push("/classes")} />
         <Button
           title="Sign Out"
           disabled={busy}
