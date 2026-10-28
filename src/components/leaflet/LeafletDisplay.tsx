@@ -19,7 +19,7 @@ export default function LeafletDisplay({ markers }: LeafletDisplayProps) {
     return (
       <iframe
         title="UCSC campus map"
-        sandbox="allow-scripts"
+        sandbox="allow-scripts allow-same-origin"
         srcDoc={mapHTML}
         style={{ flex: 1, width: "100%", height: "100%", border: 0 }}
       />
