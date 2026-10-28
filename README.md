@@ -125,5 +125,6 @@ before releases; `npm audit fix --force` can break Expo SDK compatibility.
 - [Expo / Expo Go](https://docs.expo.dev/get-started/create-a-project/)
 - [Supabase React Native](https://supabase.com/docs/guides/auth/quickstarts/react-native).
 - Planning:
-  - [Sprint 1](sprint1.md)
   - [Release Plan](RELEASE_PLAN.md).
+  - [Sprint 1](sprint1.md)
+  - [Sprint 2](sprint2.md)
