@@ -1,28 +1,25 @@
 import { LeafletPopup, loadPopup } from "./LeafletPopup";
 
-const STARTING_LOCATION = {
-  latitude: 36.99937065610728,
-  longitude: -122.0616947376665,
-};
+export interface Marker {
+  latitude: number;
+  longitude: number;
+  popup?: LeafletPopup;
+}
 
 export default class LeafletMap {
+  STARTING_LOCATION = {
+    latitude: 36.99937065610728,
+    longitude: -122.0616947376665,
+  };
   leafletHTML: string;
-  private markers: Array<{
-    latitude: number;
-    longitude: number;
-    popup?: LeafletPopup;
-  }> = new Array<{
-    latitude: number;
-    longitude: number;
-    popup?: LeafletPopup;
-  }>();
+  private markers: Array<Marker> = new Array<Marker>();
 
   constructor() {
     this.leafletHTML = this.createHTML();
   }
-  private createHTML(): string {
-    const markerScripts = this.addMarkers();
 
+  private createHTML(): string {
+    const markerScripts = this.displayMarkers();
     return `
       <!DOCTYPE html>
       <html>
@@ -43,7 +40,7 @@ export default class LeafletMap {
           <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
           <script>
             window.map = L.map("map").setView(
-              [${STARTING_LOCATION.latitude}, ${STARTING_LOCATION.longitude}],
+              [${this.STARTING_LOCATION.latitude}, ${this.STARTING_LOCATION.longitude}],
               18
             );
             L.tileLayer(
@@ -60,19 +57,13 @@ export default class LeafletMap {
       </html>
     `;
   }
-  public createMarker(
-    latitude: number,
-    longitude: number,
-    popup?: LeafletPopup,
-  ): void {
-    this.markers.push({
-      latitude: latitude,
-      longitude: longitude,
-      popup: popup,
-    });
+
+  public setMarkers(markers: Array<Marker>): void {
+    this.markers = markers;
     this.leafletHTML = this.createHTML();
   }
-  private addMarkers(): string {
+
+  private displayMarkers(): string {
     return this.markers
       .map((marker) => {
         let script = `L.marker([${marker.latitude}, ${marker.longitude}]).addTo(window.map)`;
