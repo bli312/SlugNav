@@ -115,8 +115,8 @@ Bundling does not test native device behavior.
   TypeScript, ESLint, and tests; GitHub CI is not configured yet.
 - Database contributors can use the Supabase CLI for versioned SQL migrations.
   Add tables, explicit permissions, and row-level security policies together;
-  test access as different users before deploying to the shared project. No
-  application tables are introduced by this scaffold.
+  test access as different users before deploying to the shared project. See the
+  [class schema](docs/class-schema.md) for tables, access rules, and SQL setup.
 
 `npm audit` currently reports upstream Expo dependency advisories. Review them
 before releases; `npm audit fix --force` can break Expo SDK compatibility.
