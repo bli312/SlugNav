@@ -49,7 +49,7 @@ export default function AuthCallbackScreen() {
         {error ? (
           <>
             <Text accessibilityRole="header" style={styles.title}>
-              Couldn’t sign you in
+              Couldn't sign you in
             </Text>
             <Text accessibilityRole="alert" style={styles.message}>
               {error}
@@ -57,13 +57,13 @@ export default function AuthCallbackScreen() {
             <Button
               title="Back to sign in"
               color="#174B35"
-              onPress={() => router.replace("/login")}
+              onPress={() => router.replace("../login")}
             />
           </>
         ) : (
           <>
             <ActivityIndicator color="#174B35" />
-            <Text style={styles.message}>Finishing sign-in…</Text>
+            <Text style={styles.message}>Finishing sign-in...</Text>
           </>
         )}
       </View>
