@@ -17,9 +17,9 @@ export default class LeafletMap {
   constructor() {
     this.leafletHTML = this.createHTML();
   }
-  private createHTML(): string {
-    const markerScripts = this.addMarkers();
 
+  private createHTML(): string {
+    const markerScripts = this.displayMarkers();
     return `
       <!DOCTYPE html>
       <html>
@@ -57,19 +57,13 @@ export default class LeafletMap {
       </html>
     `;
   }
-  public createMarker(
-    latitude: number,
-    longitude: number,
-    popup?: LeafletPopup,
-  ): void {
-    this.markers.push({
-      latitude: latitude,
-      longitude: longitude,
-      popup: popup,
-    });
+
+  public setMarkers(markers: Array<Marker>): void {
+    this.markers = markers;
     this.leafletHTML = this.createHTML();
   }
-  private addMarkers(): string {
+
+  private displayMarkers(): string {
     return this.markers
       .map((marker) => {
         let script = `L.marker([${marker.latitude}, ${marker.longitude}]).addTo(window.map)`;

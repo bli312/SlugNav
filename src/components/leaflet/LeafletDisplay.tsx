@@ -1,45 +1,27 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Platform, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
+import LeafletMap, { Marker } from "./LeafletMap";
 
-import LeafletMap from "./LeafletMap";
-import { createPopup } from "./LeafletPopup";
+interface LeafletDisplayProps {
+  markers: Array<Marker>;
+}
 
-const map = new LeafletMap();
+export default function LeafletDisplay({ markers }: LeafletDisplayProps) {
+  // recreate map html when searchbar used
+  const mapHTML = useMemo(() => {
+    const mapInstance = new LeafletMap();
+    mapInstance.setMarkers(markers);
+    return mapInstance.leafletHTML;
+  }, [markers]);
 
-// TODO link classroom information to each marker with database
-map.createMarker(
-  36.99937065610728,
-  -122.0616947376665,
-  createPopup(
-    "CSE115A Classroom (Fall 2026 Quarter)",
-    "Physical Sciences Building - Room 114",
-    "https://geohwilson.com/wp-content/uploads/2020/12/20201111ACCO315a-1-scaled.jpg",
-  ),
-);
-map.createMarker(
-  36.99716392241645,
-  -122.05169890254543,
-  createPopup(
-    "CSE118 Classroom (Fall 2026 Quarter)",
-    "Stevenson Academics Building - Room 150",
-    undefined,
-  ),
-);
-
-export default function LeafletDisplay() {
   if (Platform.OS === "web") {
     return (
       <iframe
         title="UCSC campus map"
         sandbox="allow-scripts"
-        srcDoc={map.leafletHTML}
-        style={{
-          flex: 1,
-          width: "100%",
-          height: "100%",
-          border: 0,
-        }}
+        srcDoc={mapHTML}
+        style={{ flex: 1, width: "100%", height: "100%", border: 0 }}
       />
     );
   }
@@ -47,14 +29,12 @@ export default function LeafletDisplay() {
   return (
     <WebView
       originWhitelist={["*"]}
-      source={{ html: map.leafletHTML }}
+      source={{ html: mapHTML }}
       style={styles.map}
     />
   );
 }
 
 const styles = StyleSheet.create({
-  map: {
-    flex: 1,
-  },
+  map: { flex: 1 },
 });
