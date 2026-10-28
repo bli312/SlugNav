@@ -9,7 +9,7 @@ export function useSupabaseAutoRefresh() {
     if (Platform.OS === "web" || !isSupabaseConfigured()) return;
 
     const supabase = getSupabase();
-    const updateRefresh = (state: string | null) => {
+    const updateRefresh = (state: string | null | undefined) => {
       if (state === "active") {
         void supabase.auth.startAutoRefresh();
       } else {
