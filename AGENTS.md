@@ -34,14 +34,24 @@ can understand and maintain.
 - Keep local environment files, credentials, dependencies, and generated output
   out of commits. Review the files being included rather than staging everything.
 
+## Privacy and data security
+
+- Enforce database security with Supabase Row-Level Security (RLS) on all tables;
+  never rely on frontend UI checks alone to restrict data access.
+- Student account data and schedules are private by default; scope queries and
+  policies to the authenticated owner (`auth.uid() = user_id`).
+- For crowd-sourced submissions (e.g., classrooms), prevent creators from
+  modifying or deleting records once approved, and enforce unique constraints on
+  peer confirmations.
+- Protect private user data: use synthetic data in tests and examples, keep
+  secrets out of code and logs, and never weaken access controls to pass a test.
+
 ## Verify and hand off
 
 - Use the project's existing checks and tests. Choose checks relevant to the
   change; add regression coverage for meaningful behavior changes.
 - For documentation-only edits, check accuracy, links, and formatting. An app
   build is unnecessary.
-- Protect private user data. Use synthetic data in tests and examples, keep
-  secrets out of code and logs, and never weaken access controls to pass a test.
 - Review the final diff. Report what changed, what was checked, and any remaining
   limitations or manual steps. Do not claim checks passed if they were not run.
 
