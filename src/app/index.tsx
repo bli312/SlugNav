@@ -1,12 +1,13 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Button, FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/providers/auth-provider";
 
-import LeafletDisplay from "@/components/leaflet/LeafletDisplay";
+import AccountHeader from "@/components/AccountHeader";
 import Searchbar from "@/components/Searchbar";
+import LeafletDisplay from "@/components/leaflet/LeafletDisplay";
 import { Marker } from "@/components/leaflet/LeafletMap";
 import { createPopup } from "@/components/leaflet/LeafletPopup";
 
@@ -52,20 +53,12 @@ export default function CampusMap() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Navigation Bar (NavBar) */}
-      <View style={styles.account}>
-        <View style={styles.identity}>
-          <Text accessibilityRole="header" style={styles.title}>
-            SlugNav
-          </Text>
-          <Text numberOfLines={1}>{session?.user.email}</Text>
-        </View>
-        <Button title="Classes" onPress={() => router.push("/classes")} />
-        <Button
-          title="Sign Out"
-          disabled={busy}
-          onPress={() => void signOut()}
-        />
-      </View>
+      <AccountHeader
+        userEmail={session?.user.email}
+        busy={busy}
+        onSignOut={() => void signOut()}
+        onNavigateClasses={() => router.push("/classes")}
+      />
       {error && (
         <Text accessibilityRole="alert" style={styles.error}>
           {error}
