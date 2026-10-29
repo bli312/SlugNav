@@ -1,15 +1,16 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { FlatList, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/providers/auth-provider";
 
 import AccountHeader from "@/components/AccountHeader";
-import Searchbar from "@/components/Searchbar";
+import Searchbar from "@/components/search/Searchbar";
 import LeafletDisplay from "@/components/leaflet/LeafletDisplay";
 import { Marker } from "@/components/leaflet/LeafletMap";
 import { createPopup } from "@/components/leaflet/LeafletPopup";
+import FlatListSearch from "@/components/search/FlatListSearch";
 
 // TODO replace testing data with ucsc api
 const data: Array<Marker> = [
@@ -38,18 +39,6 @@ export default function CampusMap() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [filteredMarkers, setFilteredMarkers] = useState(data);
-
-  // moved handlesearch from searchbar.tsx to index.tsx
-  // this way, we can track when searchbar is updated
-  // searchbar.tsx now used as "layout"
-  const handleSearch = (text: string) => {
-    setSearch(text);
-    const filtered = data.filter((item) =>
-      item.popup?.title.toLowerCase().includes(text.toLowerCase()),
-    );
-    setFilteredMarkers(filtered);
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       {/* Navigation Bar (NavBar) */}
@@ -64,20 +53,16 @@ export default function CampusMap() {
           {error}
         </Text>
       )}
-      <Searchbar search={search} onSearchChange={handleSearch} />
-      {/* FlatList */}
-      {search.length > 0 && (
-        <FlatList
-          data={filteredMarkers}
-          keyExtractor={(item) =>
-            item.popup ? item.popup.title : "Unknown Classroom"
-          }
-          renderItem={({ item }) => (
-            <Text style={styles.listItem}>{item.popup?.title}</Text>
-          )}
-          style={styles.listContainer}
-        />
-      )}
+
+      {/* Searchbar */}
+      <Searchbar
+        search={search}
+        markers={data}
+        onSearchChange={setSearch}
+        onFilteredMarkersChange={setFilteredMarkers}
+      />
+      <FlatListSearch search={search} filteredMarkers={filteredMarkers} />
+
       {/* Leaflet Map */}
       <LeafletDisplay markers={filteredMarkers} />
     </SafeAreaView>
@@ -86,14 +71,5 @@ export default function CampusMap() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  account: { flexDirection: "row", alignItems: "center", gap: 16, padding: 16 },
-  identity: { flex: 1, gap: 4 },
-  title: { fontSize: 22, fontWeight: "700" },
   error: { color: "#A12828", paddingHorizontal: 16, paddingBottom: 12 },
-  listContainer: {
-    maxHeight: 120,
-    paddingHorizontal: 16,
-    backgroundColor: "#f9f9f9",
-  },
-  listItem: { paddingVertical: 6, fontSize: 14, color: "#333" },
 });
