@@ -47,6 +47,14 @@ export default class LeafletMap {
               }
             ).addTo(window.map);
             ${markerScripts}
+            // fit bounds to do accurate zoom on average of markers
+            if (markers.length > 0) {
+              const bounds = L.latLngBounds(markers);
+              window.map.fitBounds(bounds, {
+                padding: [60, 60],
+                maxZoom: 16
+              });
+            }
           </script>
         </body>
       </html>
@@ -55,7 +63,23 @@ export default class LeafletMap {
 
   public setMarkers(markers: Array<Marker>): void {
     this.markers = markers;
+    this.changeLocation(markers);
     this.leafletHTML = this.createHTML();
+  }
+
+  private changeLocation(markers: Array<Marker>): void {
+    if (markers.length === 0) return;
+    const total = markers.reduce(
+      (acc, marker) => ({
+        latitude: acc.latitude + marker.latitude,
+        longitude: acc.longitude + marker.longitude,
+      }),
+      { latitude: 0, longitude: 0 },
+    );
+    this.STARTING_LOCATION = {
+      latitude: total.latitude / markers.length,
+      longitude: total.longitude / markers.length,
+    };
   }
 
   private displayMarkers(): string {
