@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import { Platform, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
-import LeafletMap, { Marker } from "./LeafletMap";
+import Marker from "./LeafletMarker";
+import LeafletMap from "./LeafletMap";
 
 interface LeafletDisplayProps {
   markers: Array<Marker>;

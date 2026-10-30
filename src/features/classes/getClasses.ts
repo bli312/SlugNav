@@ -1,7 +1,6 @@
 import { getSupabase } from "@/lib/supabase";
 
-import { mockClasses } from "./mockClasses";
-import type { UcscClass } from "./types";
+import { mockClasses, ucscClass } from "./mockClasses";
 
 // The screen only calls getClasses(). Set USE_MOCK to true to fall back to
 // mock data, e.g. when Supabase isn't set up in .env.local.
@@ -19,7 +18,7 @@ type ClassRow = {
   room: string | null;
 };
 
-export async function getClasses(): Promise<UcscClass[]> {
+export async function getClasses(): Promise<ucscClass[]> {
   if (USE_MOCK) {
     return mockClasses;
   }

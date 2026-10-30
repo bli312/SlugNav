@@ -1,10 +1,5 @@
-import { LeafletPopup, loadPopup } from "./LeafletPopup";
-
-export interface Marker {
-  latitude: number;
-  longitude: number;
-  popup?: LeafletPopup;
-}
+import { loadPopup } from "./LeafletPopup";
+import Marker from "./LeafletMarker";
 
 export default class LeafletMap {
   STARTING_LOCATION = {
