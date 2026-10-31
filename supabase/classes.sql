@@ -1,6 +1,5 @@
--- Classes table for SlugNav Sprint 1 (issues #8 / #10).
--- Run once in the Supabase dashboard: SQL Editor > New query > paste > Run.
--- Class catalog data is public, so anyone can read it; nobody can write from the app.
+-- Historical catalog schema and sample data. See docs/class-schema.md for setup.
+-- Do not run after the class-schema migration: this restores unrestricted reads.
 
 create table if not exists public.classes (
   id bigint generated always as identity primary key,
