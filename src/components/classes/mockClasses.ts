@@ -1,4 +1,4 @@
-export interface ucscClass {
+export interface Class {
   id: string;
   courseCode: string;
   title: string;
@@ -11,7 +11,7 @@ export interface ucscClass {
 
 // Sample data for development only. Not a real schedule.
 // Kept in sync with the sample rows in supabase/classes.sql.
-export const mockClasses: Array<ucscClass> = [
+export const mockClasses: Array<Class> = [
   {
     id: "1",
     courseCode: "CSE 101",

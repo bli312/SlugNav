@@ -7,12 +7,12 @@ import {
   View,
 } from "react-native";
 
-import { getClasses } from "./getClasses";
-import { ucscClass } from "./mockClasses";
+import { getClasses } from "./GetClasses";
+import { Class } from "./mockClasses";
 
 // Story 1.2: list classes with the building and room where each one meets.
 export default function ClassListScreen() {
-  const [classes, setClasses] = useState<ucscClass[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

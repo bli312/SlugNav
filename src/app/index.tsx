@@ -11,7 +11,7 @@ import LeafletDisplay from "@/components/leaflet/LeafletDisplay";
 import Marker, { parse } from "@/components/leaflet/LeafletMarker";
 // import { createPopup } from "@/components/leaflet/LeafletPopup";
 import FlatListSearch from "@/components/search/FlatListSearch";
-import { mockClasses } from "@/features/classes/mockClasses";
+import { mockClasses } from "@/components/classes/mockClasses";
 
 // TODO replace testing data with ucsc api
 const data: Array<Marker> = parse(mockClasses);

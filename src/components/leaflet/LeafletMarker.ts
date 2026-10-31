@@ -1,6 +1,6 @@
-import { ucscClass } from "@/features/classes/mockClasses";
+import { Class } from "@/components/classes/mockClasses";
 import { LeafletPopup } from "./LeafletPopup";
-import { mockLocations } from "@/features/classes/mockLocations";
+import { mockLocations } from "@/components/classes/mockLocations";
 
 export default interface Marker {
   latitude: number;
@@ -8,7 +8,7 @@ export default interface Marker {
   popup?: LeafletPopup;
 }
 
-export function parse(classes: Array<ucscClass>): Array<Marker> {
+export function parse(classes: Array<Class>): Array<Marker> {
   const markers = new Array<Marker>();
   classes.forEach((classElement) => {
     const location = mockLocations.find(
