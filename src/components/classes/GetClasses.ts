@@ -14,7 +14,7 @@ type ClassRow = {
   instructor: string | null;
   days: string | null;
   meeting_time: string | null;
-  building: string | null;
+  location: string | null;
   room: string | null;
 };
 
@@ -39,7 +39,7 @@ export async function getClasses(): Promise<Class[]> {
     instructor: row.instructor,
     days: row.days,
     time: row.meeting_time,
-    building: row.building,
+    location: row.location,
     room: row.room,
   }));
 }

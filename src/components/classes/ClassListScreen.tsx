@@ -54,7 +54,7 @@ export default function ClassListScreen() {
           <Text style={styles.courseCode}>{item.courseCode}</Text>
           <Text style={styles.title}>{item.title}</Text>
           <Text style={styles.location}>
-            {item.building ?? "Location TBA"}
+            {item.location ?? "Location TBA"}
             {item.room ? `, Room ${item.room}` : ""}
           </Text>
           {(item.days || item.time) && (

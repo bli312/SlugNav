@@ -9,7 +9,6 @@ import AccountHeader from "@/components/AccountHeader";
 import Searchbar from "@/components/search/Searchbar";
 import LeafletDisplay from "@/components/leaflet/LeafletDisplay";
 import Marker, { parse } from "@/components/leaflet/LeafletMarker";
-// import { createPopup } from "@/components/leaflet/LeafletPopup";
 import FlatListSearch from "@/components/search/FlatListSearch";
 import { mockClasses } from "@/components/classes/mockClasses";
 

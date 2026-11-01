@@ -5,7 +5,7 @@ export interface Class {
   instructor: string | null;
   days: string | null;
   time: string | null;
-  building: string | null;
+  location: string | null;
   room: string | null;
 }
 
@@ -19,7 +19,7 @@ export const mockClasses: Array<Class> = [
     instructor: "Staff",
     days: "MWF",
     time: "9:20AM-10:25AM",
-    building: "Thimann Lecture",
+    location: "Thimann Lecture",
     room: "003",
   },
   {
@@ -29,7 +29,7 @@ export const mockClasses: Array<Class> = [
     instructor: "Staff",
     days: "TuTh",
     time: "11:40AM-1:15PM",
-    building: "Baskin Engineering",
+    location: "Baskin Engineering",
     room: "152",
   },
   {
@@ -39,7 +39,7 @@ export const mockClasses: Array<Class> = [
     instructor: "Staff",
     days: "MWF",
     time: "1:20PM-2:25PM",
-    building: "Earth & Marine",
+    location: "Earth & Marine",
     room: "B206",
   },
   {
@@ -49,7 +49,7 @@ export const mockClasses: Array<Class> = [
     instructor: "Staff",
     days: "TuTh",
     time: "8:00AM-9:35AM",
-    building: "Physical Sciences",
+    location: "Physical Sciences",
     room: "110",
   },
   {
@@ -59,7 +59,7 @@ export const mockClasses: Array<Class> = [
     instructor: "Staff",
     days: "MWF",
     time: "10:40AM-11:45AM",
-    building: "Media Theater",
+    location: "Media Theater",
     room: "M110",
   },
   {
@@ -69,7 +69,7 @@ export const mockClasses: Array<Class> = [
     instructor: "Staff",
     days: "MWF",
     time: "12:00PM-1:05PM",
-    building: "Classroom Unit",
+    location: "Classroom Unit",
     room: "002",
   },
   {
@@ -79,7 +79,7 @@ export const mockClasses: Array<Class> = [
     instructor: "Richard Konrad Jullig",
     days: "MWF",
     time: "10:40AM-11:45AM",
-    building: "Physical Sciences",
+    location: "Physical Sciences",
     room: "114",
   },
   {
@@ -89,7 +89,7 @@ export const mockClasses: Array<Class> = [
     instructor: "David Harrison",
     days: "MWF",
     time: "2:40PM-3:45PM",
-    building: "Stevenson Academics",
+    location: "Stevenson Academics",
     room: "150",
   },
 ];

@@ -1,5 +1,5 @@
 import { Class } from "@/components/classes/mockClasses";
-import { LeafletPopup } from "./LeafletPopup";
+import { createPopup, LeafletPopup } from "./LeafletPopup";
 import { mockLocations } from "@/components/classes/mockLocations";
 
 export default interface Marker {
@@ -12,7 +12,7 @@ export function parse(classes: Array<Class>): Array<Marker> {
   const markers = new Array<Marker>();
   classes.forEach((classElement) => {
     const location = mockLocations.find(
-      (location) => location.name === classElement.building,
+      (location) => location.name === classElement.location,
     );
     // break location search if not found
     if (!location || !location.room) return;
@@ -22,7 +22,11 @@ export function parse(classes: Array<Class>): Array<Marker> {
     markers.push({
       latitude: room.latitude!,
       longitude: room.longitude!,
-      popup: undefined,
+      popup: createPopup(
+        `${classElement.courseCode} - ${classElement.title}`,
+        `${classElement.location!} (${classElement.room!})`,
+        undefined,
+      ),
     });
   });
   return markers;

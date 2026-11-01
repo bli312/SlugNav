@@ -15,6 +15,9 @@ export default class LeafletMap {
 
   private createHTML(): string {
     const markerScripts = this.displayMarkers();
+    const markersJSON = JSON.stringify(
+      this.markers.map((m) => [m.latitude, m.longitude]),
+    );
     return `
       <!DOCTYPE html>
       <html>
@@ -34,10 +37,11 @@ export default class LeafletMap {
           <div id="map"></div>
           <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
           <script>
-            window.map = L.map("map").setView(
-              [${this.STARTING_LOCATION.latitude}, ${this.STARTING_LOCATION.longitude}],
-              18
-            );
+            window.map = L.map("map")
+              .setView(
+                [${this.STARTING_LOCATION.latitude}, ${this.STARTING_LOCATION.longitude}],
+                16
+              );
             L.tileLayer(
               "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
               {
@@ -46,6 +50,7 @@ export default class LeafletMap {
                   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               }
             ).addTo(window.map);
+            const markers = ${markersJSON}
             ${markerScripts}
             // fit bounds to do accurate zoom on average of markers
             if (markers.length > 0) {
