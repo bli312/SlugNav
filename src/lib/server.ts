@@ -1,8 +1,26 @@
-import { ENDPOINT, PartialClass } from "@/components/classes/pisa/PisaElements";
+// ================================================================ //
+// =                                                              = //
+// =      IMPORTANT - run with `npx tsx ./src/lib/server.ts`      = //
+// =                                                              = //
+// ================================================================ //
+
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+
+console.log("Supabase URL loaded:", !!process.env.EXPO_PUBLIC_SUPABASE_URL);
+console.log(
+  "Backend secret loaded:",
+  !!process.env.BACKEND_SUPABASE_SECRET_KEY,
+);
+
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { AnyNode, Element } from "domhandler";
 import express from "express";
+
+import { ENDPOINT } from "@/components/classes/pisa/PisaElements";
+import getCurrentTerm from "@/components/classes/pisa/CurrentTerm";
+import scrapeClass from "@/components/classes/pisa/ScrapePisaClass";
+import { getSupabase } from "./backend-supabase";
 
 const app = express();
 app.use(express.json());
@@ -11,11 +29,20 @@ const DEFAULT_TERM = 2268;
 
 app.get("/api/classes", async (req, res) => {
   try {
+    let currentTerm = DEFAULT_TERM;
+    try {
+      currentTerm = await getCurrentTerm();
+    } catch (err) {
+      console.warn(
+        `[WARNING] Failed to fetch current term dynamically, falling back to ${DEFAULT_TERM}:`,
+        err,
+      );
+    }
     const pisaResponse = await axios.post(
       ENDPOINT,
       {
         action: "results",
-        "binds[:term]": DEFAULT_TERM,
+        "binds[:term]": currentTerm,
         "binds[:subject]": "",
         "binds[:title]": "",
         "binds[:instructor]": "",
@@ -32,58 +59,40 @@ app.get("/api/classes", async (req, res) => {
         },
       },
     );
-
     const $ = cheerio.load(pisaResponse.data);
-    function scrapeClass(
-      _: unknown,
-      el: cheerio.BasicAcceptedElems<AnyNode>,
-    ): PartialClass {
-      const find = (
-        selector: string | Element | cheerio.Cheerio<Element> | undefined,
-      ) => $(el).find(selector);
+    const classes = $(".panel.panel-default.row")
+      .map((_, element) => scrapeClass($, element))
+      .toArray();
 
-      const [code, name] = find("h2 a")
-        .text()
-        .split(/\u00A0\u00A0\u00A0/g)
-        .map((s) => s.trim());
+    // format then upsert into supabase
+    const formattedClasses = classes.map((column) => ({
+      code: column.code,
+      name: column.name,
+      class_number: column.number,
+      location: column.meetingInfo.location,
+      day_and_time: column.meetingInfo.dayAndTime,
+      instructor_name: column.instructor.name,
+      term: currentTerm,
+    }));
+    const { data, error } = await getSupabase()
+      .from("classes")
+      .upsert(formattedClasses, { onConflict: "class_number" });
 
-      const location = find(
-        ".panel-body .row > div:nth-child(3) > div:nth-child(1)",
-      )
-        .text()
-        .replace("Location:", "")
-        .trim();
-
-      const dayAndTime = find(
-        ".panel-body .row > div:nth-child(3) > div:nth-child(2)",
-      )
-        .text()
-        .replace("Day and Time:", "")
-        .trim();
-
-      return {
-        code,
-        name,
-        number: parseInt(
-          find(".panel-body .row > div:nth-child(1) a").text().trim(),
-        ),
-        meetingInfo: {
-          location,
-          dayAndTime,
-        },
-        instructor: {
-          name: find(".panel-body .row > div:nth-child(2)")
-            .text()
-            .split(":")[1]
-            .trim(),
-        },
-      };
+    if (error) {
+      console.log(`[SUPABASE ERROR] ${error}`);
+      return res.status(500).json({
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
     }
-    const classes = $(".panel.panel-default.row").map(scrapeClass).toArray();
-    console.log(classes);
-    return res.json(classes);
+    return res.json({ classes: classes, data: data });
   } catch (error) {
-    console.error(axios.isAxiosError(error) ? error.response! : error);
+    console.error(
+      `[ERROR] ${axios.isAxiosError(error) ? error.response! : error}`,
+    );
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

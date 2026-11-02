@@ -1,11 +1,8 @@
 // html element names coming from ENDPOINT so cheerio can read
 export const ENDPOINT = "https://pisa.ucsc.edu/class_search/index.php";
-
-// ./CurrentTerm
 export const TERM_DROPDOWN = "term_dropdown";
 
-// ./PisaSearch
-export interface PartialClass {
+export interface PisaClass {
   code: string;
   name: string;
   number: number;

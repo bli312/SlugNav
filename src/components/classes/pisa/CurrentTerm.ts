@@ -1,10 +1,10 @@
+import axios from "axios";
 import * as cheerio from "cheerio";
-import { GET } from "./SearchRequests";
+
 import { ENDPOINT, TERM_DROPDOWN } from "./PisaElements";
 
 export default async function getCurrentTerm(): Promise<number> {
-  // 200 is default OK response, throw error if not ok
-  const res = await GET(ENDPOINT);
+  const res = await axios.get(ENDPOINT);
   if (res.status != 200)
     throw new Error(`[ERROR] Could not get current term, status ${res.status}`);
 
