@@ -1,7 +1,7 @@
 # Class data schema
 
-The [SQL migration](../supabase/migrations/20261028000000_class_schema.sql) defines
-the tables, constraints, and row-level security (RLS) policies.
+[`supabase/classes.sql`](../supabase/classes.sql) defines the class tables,
+constraints, row-level security (RLS) policies, and manual-class creation function.
 
 ## `classes`
 
@@ -11,15 +11,23 @@ One row per class offering or private manual class.
 | --- | --- |
 | `id` | Generated `bigint` primary key, independent of PISA identifiers. |
 | `owner_id` | Nullable reference to `auth.users.id`. Null means shared catalog; a user ID means private. |
-| `course_code` | Optional full label, such as `CSE 115A - 02`; no separate section field. |
-| `title` | Required, nonblank class name. |
-| `instructor` | Optional instructor text. |
-| `term_code` | Optional integer identifying the PISA quarter, such as `2268` for Fall 2026. |
+| `code` | Optional full label, such as `CSE 115A - 02`; no separate section field. |
+| `name` | Required, nonblank class name. |
+| `instructor_name` | Optional instructor text. |
+| `term` | Optional integer identifying the PISA quarter, such as `2268` for Fall 2026. |
 | `class_number` | Optional integer identifying a PISA enrollment section within that quarter. |
+| `location`, `day_and_time` | Optional raw PISA meeting text, displayed when there are no `class_meetings` rows. |
+| `updated_at` | Timestamp defaulting to insertion time. Writers must set it on updates to record when the row was refreshed. |
 
-Imports use the unique `(term_code, class_number)` pair to identify an offering.
+Imports use the unique `(term, class_number)` pair to identify an offering.
 Private manual/custom classes must supply the owner's user ID and leave
-`class_number` null. Customizing a catalog entry means creating a private copy.
+`class_number` null. Every row still has its own generated `id`.
+
+The importer must use `onConflict: "term,class_number"` for upserts and omit `id`
+so existing saved associations keep pointing to the same class. Catalog rows have
+`owner_id = NULL`. Parsed days, times, and locations belong in `class_meetings`;
+manual classes already write there. Keep the raw meeting columns until the
+importer and readers no longer need them.
 
 ## `class_meetings`
 
@@ -46,8 +54,12 @@ not individual dated calendar events.
 | `class_id` | Required `bigint` reference to `classes.id`. |
 
 The pair is the primary key, preventing duplicate saves. Saving a catalog class
-adds this association. Saving a manual class also creates its private class and
-meeting records. Removing an association unsaves the class; it does not delete it.
+adds this association. Creating a manual class also creates its meetings and saved
+association in one transaction, using `create_manual_class`.
+
+In the app, removing a catalog class deletes only the saved association. Removing
+a manual class deletes the private class; its meetings and association are removed
+by cascading foreign keys.
 
 ## Access rules
 
@@ -60,17 +72,17 @@ meeting records. Removing an association unsaves the class; it does not delete i
 - Foreign keys cascade deletes: deleting a class removes its meetings and saves;
   deleting a user removes their private classes and saved associations.
 
-## Applying the schema
+## Setup
 
-Run the migration once in Supabase SQL Editor. It supports an empty database or
-the original catalog schema and preserves existing catalog rows. If the equivalent
-SQL was already applied manually, do not run it again. Before adopting CLI-based
-deployment, reconcile manually applied SQL with the migration history.
+Run the complete [`supabase/classes.sql`](../supabase/classes.sql) file in Supabase
+SQL Editor after the team agrees to reset class data. **It deletes and recreates
+`classes`, `class_meetings`, and `user_classes`, including all saved schedules.**
+It does not change user accounts or the Google login setup. The catalog starts
+empty; populate it with the importer after updating its upsert target above.
 
-The migration retains the old `days`, `meeting_time`, `building`, and `room`
-columns because the current class-list reader still uses them. It does not copy
-those values into `class_meetings`. Migrating schedules and updating the reader
-are required before removing those columns or displaying new meeting records.
+The file also installs `create_manual_class`, which uses the signed-in user's
+permissions and RLS. Only authenticated users can call it.
 
-Do not rerun the historical `supabase/classes.sql` after this migration: it adds
-sample data and restores an unrestricted read policy.
+For subsequent schema changes, add versioned migrations instead of rerunning this
+reset script. Reconcile this manually applied baseline with migration history
+before adopting CLI-based deployment.
