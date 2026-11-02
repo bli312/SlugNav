@@ -1,19 +1,19 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import { render, screen, userEvent } from "@testing-library/react-native";
 
-import ClassListScreen from "../../src/components/classes/ClassListScreen";
-import ManualClassForm from "../../src/components/classes/ManualClassForm";
-import * as classesApi from "../../src/components/classes/GetClasses";
+import ClassListScreen from "../../src/components/classes/class_list/ClassListScreen";
+import ManualClassForm from "../../src/components/classes/class_list/ManualClassForm";
+import * as classesApi from "../../src/components/classes/class_list/GetClasses";
 import type {
   ManualClassDraft,
   Class,
-} from "../../src/components/classes/types.ts";
+} from "../../src/components/classes/class_list/types.ts";
 
 jest.mock("@/providers/auth-provider", () => ({
   useAuth: () => ({ session: { user: { id: "student" } } }),
 }));
 jest.mock("@/lib/supabase", () => ({ getSupabase: () => ({}) }));
-jest.mock("../../src/components/classes/GetClasses");
+jest.mock("../../src/components/classes/class_list/GetClasses");
 
 const api = jest.mocked(classesApi);
 const catalog: Class = {

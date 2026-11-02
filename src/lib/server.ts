@@ -1,6 +1,7 @@
 // ================================================================ //
 // =                                                              = //
 // =      IMPORTANT - run with `npx tsx ./src/lib/server.ts`      = //
+// =    GO TO http://localhost:3000/api/classes TO SEE RESULTS    = //
 // =                                                              = //
 // ================================================================ //
 
@@ -16,11 +17,11 @@ import getCurrentTerm from "@/components/classes/pisa/CurrentTerm";
 import scrapeClass from "@/components/classes/pisa/ScrapePisaClass";
 import { getSupabase } from "./backend-supabase";
 
+const DEFAULT_TERM = 2268;
+const SUPABASE_TABLE = "pisa_classes";
+
 const app = express();
 app.use(express.json());
-
-const DEFAULT_TERM = 2268;
-
 app.get("/api/classes", async (req, res) => {
   try {
     let currentTerm = DEFAULT_TERM;
@@ -69,7 +70,7 @@ app.get("/api/classes", async (req, res) => {
       term: currentTerm,
     }));
     const { data, error } = await getSupabase()
-      .from("classes")
+      .from(SUPABASE_TABLE)
       .upsert(formattedClasses, { onConflict: "class_number" });
 
     if (error) {
