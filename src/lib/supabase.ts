@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { getRandomValues } from "expo-crypto";
 import { Platform } from "react-native";
 
@@ -17,7 +17,7 @@ export function isSupabaseConfigured(): boolean {
  * Use this shared client for auth and database requests. Creating it lazily lets
  * teammates work on screens before configuring their local Supabase connection.
  */
-export function getSupabase() {
+export function getSupabase(): SupabaseClient {
   if (client) return client;
 
   if (!url || !publishableKey) {
