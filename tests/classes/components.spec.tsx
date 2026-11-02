@@ -1,23 +1,22 @@
-import React from "react";
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import { render, screen, userEvent } from "@testing-library/react-native";
 
-import ClassListScreen from "../../src/features/classes/ClassListScreen";
-import ManualClassForm from "../../src/features/classes/ManualClassForm";
-import * as classesApi from "../../src/features/classes/getClasses";
+import ClassListScreen from "../../src/components/classes/ClassListScreen";
+import ManualClassForm from "../../src/components/classes/ManualClassForm";
+import * as classesApi from "../../src/components/classes/GetClasses";
 import type {
   ManualClassDraft,
-  UcscClass,
-} from "../../src/features/classes/types";
+  Class,
+} from "../../src/components/classes/types.ts";
 
 jest.mock("@/providers/auth-provider", () => ({
   useAuth: () => ({ session: { user: { id: "student" } } }),
 }));
 jest.mock("@/lib/supabase", () => ({ getSupabase: () => ({}) }));
-jest.mock("../../src/features/classes/getClasses");
+jest.mock("../../src/components/classes/GetClasses");
 
 const api = jest.mocked(classesApi);
-const catalog: UcscClass = {
+const catalog: Class = {
   id: "1",
   ownerId: null,
   courseCode: "TEST 101",
@@ -36,7 +35,9 @@ beforeEach(() => {
 
 test("manual fields start blank and meeting days can be selected and cleared", async () => {
   const user = userEvent.setup();
-  await render(<ManualClassForm onSave={async () => undefined} onCancel={jest.fn()} />);
+  await render(
+    <ManualClassForm onSave={async () => undefined} onCancel={jest.fn()} />,
+  );
   for (const label of [
     "Class name",
     "Course code",
@@ -107,7 +108,7 @@ test("a failed catalog save shows an error and stays unsaved", async () => {
 
 test.each(["catalog", "manual"])(
   "removing a %s class updates the schedule and catalog appropriately",
-  async (kind) => {
+  async (kind: string) => {
     const item = {
       ...catalog,
       saved: true,

@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import { Platform, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
-import LeafletMap, { Marker } from "./LeafletMap";
+import Marker from "./LeafletMarker";
+import LeafletMap from "./LeafletMap";
 
 interface LeafletDisplayProps {
   markers: Array<Marker>;
@@ -18,7 +19,7 @@ export default function LeafletDisplay({ markers }: LeafletDisplayProps) {
   if (Platform.OS === "web") {
     return (
       <iframe
-        title="UCSC campus map"
+        title="UCSC Campus Map"
         sandbox="allow-scripts allow-same-origin"
         srcDoc={mapHTML}
         style={{ flex: 1, width: "100%", height: "100%", border: 0 }}

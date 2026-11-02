@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ManualClassDraft, UcscClass } from "./types";
+import type { ManualClassDraft, Class } from "./types.ts";
 import { manualClassInput, weekdays } from "./manualClass.ts";
 
 type ClassRow = {
@@ -20,7 +20,7 @@ type ClassRow = {
   user_classes: { user_id: string }[];
 };
 
-function toClass(row: ClassRow): UcscClass {
+function toClass(row: ClassRow): Class {
   const meetings = [...row.class_meetings]
     .sort((a, b) => a.id - b.id)
     .map((meeting) => ({
@@ -57,8 +57,8 @@ function toClass(row: ClassRow): UcscClass {
   };
 }
 
-export async function getClasses(client: SupabaseClient): Promise<UcscClass[]> {
-  const classes: UcscClass[] = [];
+export async function getClasses(client: SupabaseClient): Promise<Class[]> {
+  const classes: Class[] = [];
   const pageSize = 500;
   while (true) {
     const { data, error } = await client
@@ -93,7 +93,7 @@ export async function saveClass(
 export async function removeClass(
   client: SupabaseClient,
   userId: string,
-  item: UcscClass,
+  item: Class,
 ) {
   const query =
     item.ownerId === userId
@@ -110,7 +110,7 @@ export async function removeClass(
 export async function createManualClass(
   client: SupabaseClient,
   draft: ManualClassDraft,
-): Promise<UcscClass> {
+): Promise<Class> {
   const { data, error } = await client.rpc(
     "create_manual_class",
     manualClassInput(draft),

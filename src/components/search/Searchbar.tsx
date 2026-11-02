@@ -1,6 +1,6 @@
 import React from "react";
 import { TextInput, StyleSheet } from "react-native";
-import { Marker } from "../leaflet/LeafletMap";
+import Marker from "../leaflet/LeafletMarker";
 
 interface SearchbarProps {
   search: string;

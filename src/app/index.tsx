@@ -8,31 +8,12 @@ import { useAuth } from "@/providers/auth-provider";
 import AccountHeader from "@/components/AccountHeader";
 import Searchbar from "@/components/search/Searchbar";
 import LeafletDisplay from "@/components/leaflet/LeafletDisplay";
-import { Marker } from "@/components/leaflet/LeafletMap";
-import { createPopup } from "@/components/leaflet/LeafletPopup";
+import Marker, { parse } from "@/components/leaflet/LeafletMarker";
 import FlatListSearch from "@/components/search/FlatListSearch";
+import { mockClasses } from "@/components/classes/mockClasses";
 
 // TODO replace testing data with ucsc api
-const data: Array<Marker> = [
-  {
-    latitude: 36.99937065610728,
-    longitude: -122.0616947376665,
-    popup: createPopup(
-      "CSE115A Classroom (Fall Quarter 2026)",
-      "Physical Sciences Building - Room 114",
-      "https://geohwilson.com/wp-content/uploads/2020/12/20201111ACCO315a-1-scaled.jpg",
-    ),
-  },
-  {
-    latitude: 36.99716392241645,
-    longitude: -122.05169890254543,
-    popup: createPopup(
-      "CSE118 Classroom (Fall Quarter 2026)",
-      "Stevenson Academics Building - Room 150",
-      undefined,
-    ),
-  },
-];
+const data: Array<Marker> = parse(mockClasses);
 
 export default function CampusMap() {
   const { session, signOut, busy, error } = useAuth();

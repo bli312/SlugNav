@@ -5,7 +5,7 @@
 **Revision:** 4 (search, full class catalog, and classroom locations moved to Sprint 2)  
 **Week 1:** 10/13/26
 
-[Scrum poker](https://www.scrumpoker-online.org/en/room/45959815/scrum-poker)
+[Scrum Poker](https://www.scrumpoker-online.org/en/room/45959815/scrum-poker)
 
 ---
 

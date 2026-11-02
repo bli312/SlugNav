@@ -4,7 +4,7 @@ export type ClassMeeting = {
   location: string | null;
 };
 
-export type UcscClass = {
+export type Class = {
   id: string;
   ownerId: string | null;
   courseCode: string | null;

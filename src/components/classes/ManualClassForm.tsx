@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 import { emptyManualClass, emptyMeeting, weekdays } from "./manualClass";
-import type { ManualClassDraft, MeetingDraft } from "./types";
+import type { ManualClassDraft, MeetingDraft } from "./types.ts";
 
 type Props = {
   onSave: (draft: ManualClassDraft) => Promise<void>;
@@ -177,7 +177,8 @@ export default function ManualClassForm({ onSave, onCancel }: Props) {
             </View>
           </View>
           <Text style={styles.hint}>
-            Use AM/PM (2:00 PM or 2pm) or 24-hour time (14:00). Times are Pacific.
+            Use AM/PM (2:00 PM or 2pm) or 24-hour time (14:00). Times are
+            Pacific.
           </Text>
           <View style={styles.field}>
             <Text style={styles.label}>Location</Text>
