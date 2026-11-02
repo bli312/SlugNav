@@ -7,12 +7,6 @@
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 
-console.log("Supabase URL loaded:", !!process.env.EXPO_PUBLIC_SUPABASE_URL);
-console.log(
-  "Backend secret loaded:",
-  !!process.env.BACKEND_SUPABASE_SECRET_KEY,
-);
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import express from "express";
@@ -34,7 +28,7 @@ app.get("/api/classes", async (req, res) => {
       currentTerm = await getCurrentTerm();
     } catch (err) {
       console.warn(
-        `[WARNING] Failed to fetch current term dynamically, falling back to ${DEFAULT_TERM}:`,
+        `[WARNING] Failed to scrape current term, defaulting to ${DEFAULT_TERM}:`,
         err,
       );
     }
@@ -87,7 +81,12 @@ app.get("/api/classes", async (req, res) => {
         hint: error.hint,
       });
     }
-    return res.json({ classes: classes, data: data });
+    console.log("[SUCCESS] Sucessfully exported to Supabase!");
+    return res.json({
+      classes: classes,
+      formattedClasses: formattedClasses,
+      data: data,
+    });
   } catch (error) {
     console.error(
       `[ERROR] ${axios.isAxiosError(error) ? error.response! : error}`,
@@ -96,4 +95,6 @@ app.get("/api/classes", async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Proxy server running on port 3000"));
+app.listen(3000, () =>
+  console.log("[SYSTEM] Proxy server running on port 3000"),
+);
