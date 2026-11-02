@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 import { emptyManualClass, emptyMeeting, weekdays } from "./manualClass";
-import type { ManualClassDraft, MeetingDraft } from "./types";
+import type { ManualClassDraft, MeetingDraft } from "./types.ts";
 
 type Props = {
   onSave: (draft: ManualClassDraft) => Promise<void>;

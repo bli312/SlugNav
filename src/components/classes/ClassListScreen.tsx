@@ -18,7 +18,7 @@ import {
   saveClass,
 } from "./GetClasses";
 import ManualClassForm from "./ManualClassForm";
-import type { ManualClassDraft, UcscClass } from "./types";
+import type { ManualClassDraft, Class } from "./types";
 
 export default function ClassListScreen() {
   const { session } = useAuth();
@@ -28,7 +28,7 @@ export default function ClassListScreen() {
 }
 
 function ClassesForUser({ userId }: { userId: string }) {
-  const [classes, setClasses] = useState<UcscClass[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<"schedule" | "catalog">("schedule");
@@ -56,7 +56,7 @@ function ClassesForUser({ userId }: { userId: string }) {
     };
   }, []);
 
-  async function updateClass(item: UcscClass, remove: boolean) {
+  async function updateClass(item: Class, remove: boolean) {
     if (updating.current || (!remove && item.saved)) return;
     updating.current = true;
     setPendingId(item.id);

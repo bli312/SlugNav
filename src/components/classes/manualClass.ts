@@ -1,4 +1,4 @@
-import type { ManualClassDraft, MeetingDraft } from "./types";
+import type { ManualClassDraft, MeetingDraft } from "./types.ts";
 
 export const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 

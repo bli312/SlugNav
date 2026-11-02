@@ -7,11 +7,11 @@ import {
   getClasses,
   removeClass,
   saveClass,
-} from "../../src/features/classes/getClasses.ts";
+} from "../../src/components/classes/GetClasses.ts";
 import {
   emptyManualClass,
   manualClassInput,
-} from "../../src/features/classes/manualClass.ts";
+} from "../../src/components/classes/manualClass.ts";
 
 function clientWith(fetch) {
   return createClient("https://example.supabase.co", "sb_publishable_test", {
