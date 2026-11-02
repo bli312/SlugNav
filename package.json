@@ -4,6 +4,7 @@
     "@electric-sql/pglite": "0.5.10",
     "@eslint/js": "^9.39.5",
     "@expo/ngrok": "^4.1.3",
+    "@testing-library/react-native": "^14",
     "@types/leaflet": "^1.9.22",
     "@types/react": "~19.3.0",
     "@typescript-eslint/eslint-plugin": "^8.72.0",
@@ -16,9 +17,12 @@
     "eslint-plugin-react-native": "^5.0.0",
     "globals": "^17.13.0",
     "husky": "^9.1.7",
+    "jest": "^30",
+    "jest-expo": "~58.0.13",
     "lint-staged": "^16.4.0",
     "patch-package": "^8.0.1",
     "prettier": "^3.9.10",
+    "test-renderer": "^1",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.0"
   },
@@ -45,8 +49,12 @@
     "check:scripts": "npm run typecheck && npm run lint && npm test",
     "lint": "eslint .",
     "format": "prettier --write **/*.{js,jsx,ts,tsx,json}",
-    "test": "node --experimental-strip-types --test",
+    "test": "node --experimental-strip-types --test && jest --runInBand",
     "prepare": "husky"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "testMatch": ["<rootDir>/tests/**/*.spec.tsx"]
   },
   "dependencies": {
     "@maplibre/maplibre-react-native": "^11.5.0",
