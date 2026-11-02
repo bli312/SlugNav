@@ -18,7 +18,7 @@ import {
   saveClass,
 } from "./GetClasses";
 import ManualClassForm from "./ManualClassForm";
-import type { ManualClassDraft, Class } from "./types";
+import type { ManualClassDraft, Class } from "./types.ts";
 
 export default function ClassListScreen() {
   const { session } = useAuth();
