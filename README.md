@@ -133,6 +133,10 @@ target. Changes with no added or modified measured source lines pass the check.
   [class schema](docs/class-schema.md) for tables, access rules, and SQL setup
   required for saving classes. `supabase/classes.sql` is a destructive class-data
   reset, not a routine setup step for each teammate.
+- Adding places requires applying
+  [`20261103000000_places.sql`](supabase/migrations/20261103000000_places.sql)
+  once in Supabase SQL Editor. On the home map, choose **Add place**, tap a
+  location, enter its name/type, and save. Saved-place search is separate work.
 
 `npm audit` currently reports upstream Expo dependency advisories. Review them
 before releases; `npm audit fix --force` can break Expo SDK compatibility.

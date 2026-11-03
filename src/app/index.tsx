@@ -7,7 +7,7 @@ import { useAuth } from "@/providers/auth-provider";
 
 import AccountHeader from "@/components/AccountHeader";
 import Searchbar from "@/components/search/Searchbar";
-import LeafletDisplay from "@/components/leaflet/LeafletDisplay";
+import PlaceMap from "@/components/places/PlaceMap";
 import Marker, { parse } from "@/components/leaflet/LeafletMarker";
 import FlatListSearch from "@/components/search/FlatListSearch";
 import { mockClasses } from "@/components/classes/mockClasses";
@@ -45,7 +45,7 @@ export default function CampusMap() {
       <FlatListSearch search={search} filteredMarkers={filteredMarkers} />
 
       {/* Leaflet Map */}
-      <LeafletDisplay markers={filteredMarkers} />
+      <PlaceMap markers={filteredMarkers} />
     </SafeAreaView>
   );
 }

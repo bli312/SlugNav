@@ -1,5 +1,6 @@
 import { loadPopup } from "./LeafletPopup";
-import Marker from "./LeafletMarker";
+import type Marker from "./LeafletMarker";
+import { placePickerScript } from "./placePicker.ts";
 
 export default class LeafletMap {
   STARTING_LOCATION = {
@@ -60,6 +61,7 @@ export default class LeafletMap {
                 maxZoom: 16
               });
             }
+            ${placePickerScript}
           </script>
         </body>
       </html>
