@@ -27,3 +27,5 @@ export type ManualClassDraft = {
   instructor: string;
   meetings: MeetingDraft[];
 };
+
+export type ClassView = "schedule" | "catalog";
