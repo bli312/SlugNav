@@ -23,11 +23,10 @@ Imports use the unique `(term, class_number)` pair to identify an offering.
 Private manual/custom classes must supply the owner's user ID and leave
 `class_number` null. Every row still has its own generated `id`.
 
-The importer must use `onConflict: "term,class_number"` for upserts and omit `id`
-so existing saved associations keep pointing to the same class. Catalog rows have
-`owner_id = NULL`. Parsed days, times, and locations belong in `class_meetings`;
-manual classes already write there. Keep the raw meeting columns until the
-importer and readers no longer need them.
+The importer uses `import_pisa_classes` to upsert by `(term, class_number)` and
+replace the imported class's meetings in one transaction. Existing class IDs and
+saved associations are preserved. Catalog rows have `owner_id = NULL`.
+The raw meeting columns remain as a fallback for unrecognized schedule text.
 
 ## `class_meetings`
 
@@ -78,7 +77,7 @@ Run the complete [`supabase/classes.sql`](../supabase/classes.sql) file in Supab
 SQL Editor after the team agrees to reset class data. **It deletes and recreates
 `classes`, `class_meetings`, and `user_classes`, including all saved schedules.**
 It does not change user accounts or the Google login setup. The catalog starts
-empty; populate it with the importer after updating its upsert target above.
+empty; populate it with the importer below.
 
 The file also installs `create_manual_class`, which uses the signed-in user's
 permissions and RLS. Only authenticated users can call it.
@@ -86,3 +85,16 @@ permissions and RLS. Only authenticated users can call it.
 For subsequent schema changes, add versioned migrations instead of rerunning this
 reset script. Reconcile this manually applied baseline with migration history
 before adopting CLI-based deployment.
+
+## Importing PISA classes
+
+Apply these migrations once in Supabase SQL Editor:
+
+- [`20261102000000_remove_public_class_read.sql`](../supabase/migrations/20261102000000_remove_public_class_read.sql): removes the public-read policy left by the old `pisa_classes.sql`.
+- [`20261102010000_import_pisa_meetings.sql`](../supabase/migrations/20261102010000_import_pisa_meetings.sql): installs the backend-only import function.
+
+Set `BACKEND_SUPABASE_SECRET_KEY` in `.env.local` to a Supabase secret/service-role
+key (never an `EXPO_PUBLIC_` variable). Run `npx tsx ./src/lib/server.ts`, then open
+`http://127.0.0.1:3000/api/classes` to scrape and import into `classes` and
+`class_meetings`. Each request refreshes catalog meetings without changing saved
+schedules or manual classes. `updated_at` records the import time.

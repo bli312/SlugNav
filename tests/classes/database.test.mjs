@@ -10,6 +10,13 @@ const schemaSql = await readFile(
   new URL("../../supabase/classes.sql", import.meta.url),
   "utf8",
 );
+const importSql = await readFile(
+  new URL(
+    "../../supabase/migrations/20261102010000_import_pisa_meetings.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 
 before(async () => {
   await db.exec(`
@@ -23,6 +30,7 @@ before(async () => {
     grant usage on schema auth to authenticated;
   `);
   await db.exec(schemaSql);
+  await db.exec(importSql);
 });
 after(() => db.close());
 
@@ -401,41 +409,143 @@ test("logged-out requests cannot read schedules or create classes", async () => 
   await assert.rejects(createManual(), { code: "42501" });
 });
 
-test("catalog upserts preserve saved class IDs and distinguish the same PISA number in different quarters", async () => {
+const pisaClass = {
+  code: "TEST 100 - 01",
+  name: "Fall class",
+  class_number: 12345,
+  meetings: [{ location_text: "Room 1" }],
+};
+const importCatalog = (classes = [pisaClass], term = 2268) =>
+  db.query("select public.import_pisa_classes($1, $2::jsonb)", [
+    term,
+    JSON.stringify(classes),
+  ]);
+const rows = async (sql, params = []) => (await db.query(sql, params)).rows;
+
+test("catalog refreshes preserve saves and manual meetings, without duplicates across quarters", async () => {
   await db.exec("reset role; set role service_role;");
-  const importClass = async (term, name, location) => {
-    const { rows } = await db.query(
-      `insert into public.classes (code, name, term, class_number, location, day_and_time)
-       values ('TEST 100 - 01', $1, $2, 12345, $3, 'MWF 09:00AM-10:00AM')
-       on conflict (term, class_number) do update
-       set name = excluded.name, location = excluded.location
-       returning id`,
-      [name, term, location],
-    );
-    return rows[0].id;
-  };
-  const fallId = await importClass(2268, "Fall class", "Room 1");
+  const manualMeetings = await rows(
+    "select * from public.class_meetings where class_id <= 3 order by id",
+  );
+  await importCatalog();
+  const [{ id }] = await rows(
+    "select id from public.classes where term = 2268",
+  );
   await asUser(alice);
   await db.query("insert into public.user_classes values ($1, $2)", [
     alice,
-    fallId,
+    id,
   ]);
-
   await db.exec("reset role; set role service_role;");
-  assert.equal(await importClass(2268, "Updated fall class", "Room 2"), fallId);
-  const winterId = await importClass(2270, "Winter class", "Room 3");
-  assert.notEqual(winterId, fallId);
-  await asUser(alice);
+  const updated = {
+    ...pisaClass,
+    name: "Updated class",
+    meetings: [{ location_text: "Room 2" }],
+  };
+  await importCatalog([updated]);
+  await importCatalog([updated]);
   assert.deepEqual(
-    (
-      await db.query(
-        `select c.name, c.location from public.user_classes u
-       join public.classes c on c.id = u.class_id where c.id = $1`,
-        [fallId],
-      )
-    ).rows,
-    [{ name: "Updated fall class", location: "Room 2" }],
+    await rows(
+      "select location_text from public.class_meetings where class_id = $1",
+      [id],
+    ),
+    [{ location_text: "Room 2" }],
   );
+  await importCatalog([{ ...updated, meetings: [] }]);
+  await importCatalog([pisaClass], 2270);
+  assert.deepEqual(
+    await rows(
+      "select name, term from public.classes where class_number = 12345 order by term",
+    ),
+    [
+      { name: "Updated class", term: 2268 },
+      { name: "Fall class", term: 2270 },
+    ],
+  );
+  assert.deepEqual(
+    await rows("select * from public.class_meetings where class_id = $1", [id]),
+    [],
+  );
+  assert.deepEqual(
+    await rows(
+      "select * from public.class_meetings where class_id <= 3 order by id",
+    ),
+    manualMeetings,
+  );
+  await asUser(alice);
+  assert.equal(
+    (
+      await rows(
+        "select class_id from public.user_classes where class_id = $1",
+        [id],
+      )
+    ).length,
+    1,
+  );
+});
+
+test("a failed import restores the prior classes and meetings", async () => {
+  await db.exec("reset role; set role service_role;");
+  await importCatalog();
+  const classes = await rows("select * from public.classes order by id");
+  const meetings = await rows(
+    "select * from public.class_meetings order by id",
+  );
+  await assert.rejects(
+    importCatalog([
+      { ...pisaClass, name: "Should roll back", meetings: [] },
+      {
+        ...pisaClass,
+        class_number: 12346,
+        meetings: [{ start_time: "10:00", end_time: "09:00" }],
+      },
+    ]),
+    { code: "23514" },
+  );
+  assert.deepEqual(
+    await rows("select * from public.classes order by id"),
+    classes,
+  );
+  assert.deepEqual(
+    await rows("select * from public.class_meetings order by id"),
+    meetings,
+  );
+});
+
+test("only the backend can import, and term and class number are required", async () => {
+  await assert.rejects(importCatalog(), { code: "42501" });
+  await db.exec("reset role; set role anon;");
+  await assert.rejects(importCatalog(), { code: "42501" });
+  await db.exec("reset role; set role service_role;");
+  await assert.rejects(importCatalog([pisaClass], null), /positive PISA term/);
+  await assert.rejects(
+    importCatalog([{ ...pisaClass, class_number: null }]),
+    /positive PISA class number/,
+  );
+});
+
+test("the privacy migration removes legacy public access", async () => {
+  await db.exec(`reset role; grant select on public.classes to anon;
+    create policy "Classes are readable by everyone" on public.classes
+      for select to anon, authenticated using (true);`);
+  await db.exec(
+    await readFile(
+      new URL(
+        "../../supabase/migrations/20261102000000_remove_public_class_read.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  await asUser(alice);
+  assert.deepEqual(await rows("select id from public.classes order by id"), [
+    { id: 1 },
+    { id: 2 },
+  ]);
+  await db.exec("reset role; set role anon;");
+  await assert.rejects(db.query("select * from public.classes"), {
+    code: "42501",
+  });
 });
 
 test("rebuilding clears class data and restores private saves without deleting user accounts", async () => {
