@@ -100,14 +100,23 @@ SlugNav builds use the existing `slugnav://auth/callback` redirect.
 | `npm run ios` / `npm run android` | Open an installed simulator/emulator |
 | `npm run typecheck` | Check TypeScript |
 | `npm test` | Run unit, component, and database tests locally |
+| `npm run test:coverage` | Run tests with coverage reports in `coverage/` |
 | `npm run export` | Check production bundling for iOS, Android, and web |
-| `npm run check:scripts` | Run TypeScript, ESLint, and tests |
+| `npm run check:scripts` | Run TypeScript, ESLint, and tests with coverage |
 
 Bundling does not test native device behavior.
 
 Tests use Node's test runner and PGlite for data/database behavior, and
 Jest with React Native Testing Library for components. They use synthetic data
 and do not connect to the shared Supabase project.
+
+CI runs TypeScript, ESLint, and tests with coverage on PRs into `main` and pushes
+to `main`. Reports include untested `.ts` and `.tsx` source files, excluding
+type-only `types.ts` and declaration files.
+
+For PRs, at least **80% of added or modified measured source lines** must be
+covered by tests, combining both reports. Unchanged code is not subject to this
+target. Changes with no added or modified measured source lines pass the check.
 
 ## Working on the Project
 
@@ -116,8 +125,8 @@ and do not connect to the shared Supabase project.
 - Work on feature branches and open PRs into `main`.
 - Use `npx expo install <package>` for native dependencies. Commit `package.json`
   and `package-lock.json` together; teammates install with `npm ci`.
-- Run `npm run check:scripts` and `npm run export` before review. The checks cover
-  TypeScript, ESLint, and tests; GitHub CI is not configured yet.
+- Run `npm run check:scripts` and `npm run export` before review. Bundling and
+  device behavior need verification beyond CI.
 - Database contributors can use the Supabase CLI for versioned SQL migrations.
   Add tables, explicit permissions, and row-level security policies together;
   test access as different users before deploying to the shared project. See the
