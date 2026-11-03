@@ -17,7 +17,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["tests/**/*.mjs"],
+    files: ["tests/**/*.mjs", "scripts/**/*.mjs"],
     languageOptions: {
       globals: globals.node,
     },
@@ -31,6 +31,7 @@ export default defineConfig([
       "dist/**",
       ".expo/**",
       "web-build/**",
+      "coverage/**",
     ]),
   ],
   tseslint.configs.recommended,

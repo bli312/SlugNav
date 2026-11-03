@@ -99,10 +99,24 @@ SlugNav builds use the existing `slugnav://auth/callback` redirect.
 | `npm run web` | Open the web preview |
 | `npm run ios` / `npm run android` | Open an installed simulator/emulator |
 | `npm run typecheck` | Check TypeScript |
+| `npm test` | Run unit, component, and database tests locally |
+| `npm run test:coverage` | Run tests with coverage reports in `coverage/` |
 | `npm run export` | Check production bundling for iOS, Android, and web |
-| `npm run check:scripts` | Run TypeScript, ESLint, and tests |
+| `npm run check:scripts` | Run TypeScript, ESLint, and tests with coverage |
 
 Bundling does not test native device behavior.
+
+Tests use Node's test runner and PGlite for data/database behavior, and
+Jest with React Native Testing Library for components. They use synthetic data
+and do not connect to the shared Supabase project.
+
+CI runs TypeScript, ESLint, and tests with coverage on PRs into `main` and pushes
+to `main`. Reports include untested `.ts` and `.tsx` source files, excluding
+type-only `types.ts` and declaration files.
+
+For PRs, at least **80% of added or modified measured source lines** must be
+covered by tests, combining both reports. Unchanged code is not subject to this
+target. Changes with no added or modified measured source lines pass the check.
 
 ## Working on the Project
 
@@ -111,12 +125,14 @@ Bundling does not test native device behavior.
 - Work on feature branches and open PRs into `main`.
 - Use `npx expo install <package>` for native dependencies. Commit `package.json`
   and `package-lock.json` together; teammates install with `npm ci`.
-- Run `npm run check:scripts` and `npm run export` before review. The checks cover
-  TypeScript, ESLint, and tests; GitHub CI is not configured yet.
+- Run `npm run check:scripts` and `npm run export` before review. Bundling and
+  device behavior need verification beyond CI.
 - Database contributors can use the Supabase CLI for versioned SQL migrations.
   Add tables, explicit permissions, and row-level security policies together;
-  test access as different users before deploying to the shared project. No
-  application tables are introduced by this scaffold.
+  test access as different users before deploying to the shared project. See the
+  [class schema](docs/class-schema.md) for tables, access rules, and SQL setup
+  required for saving classes. `supabase/classes.sql` is a destructive class-data
+  reset, not a routine setup step for each teammate.
 
 `npm audit` currently reports upstream Expo dependency advisories. Review them
 before releases; `npm audit fix --force` can break Expo SDK compatibility.
@@ -125,5 +141,6 @@ before releases; `npm audit fix --force` can break Expo SDK compatibility.
 - [Expo / Expo Go](https://docs.expo.dev/get-started/create-a-project/)
 - [Supabase React Native](https://supabase.com/docs/guides/auth/quickstarts/react-native).
 - Planning:
-  - [Sprint 1](sprint1.md)
-  - [Release Plan](RELEASE_PLAN.md).
+  - [Release Plan](./RELEASE_PLAN.md).
+  - [Sprint 1](./sprint_plans/sprint1.md)
+  - [Sprint 2](./sprint_plans/sprint2.md)
