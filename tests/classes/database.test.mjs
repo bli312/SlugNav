@@ -10,6 +10,13 @@ const schemaSql = await readFile(
   new URL("../../supabase/classes.sql", import.meta.url),
   "utf8",
 );
+const importSql = await readFile(
+  new URL(
+    "../../supabase/migrations/20261102010000_import_pisa_meetings.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 
 before(async () => {
   await db.exec(`
@@ -23,6 +30,7 @@ before(async () => {
     grant usage on schema auth to authenticated;
   `);
   await db.exec(schemaSql);
+  await db.exec(importSql);
 });
 after(() => db.close());
 
@@ -401,20 +409,40 @@ test("logged-out requests cannot read schedules or create classes", async () => 
   await assert.rejects(createManual(), { code: "42501" });
 });
 
-test("catalog upserts preserve saved class IDs and distinguish the same PISA number in different quarters", async () => {
+const pisaClass = {
+  code: "TEST 100 - 01",
+  name: "Fall class",
+  class_number: 12345,
+  instructor_name: "Staff",
+  location: "Room 1",
+  day_and_time: "MWF 09:00AM-10:00AM",
+  meetings: [
+    {
+      days_of_week: [1, 3, 5],
+      start_time: "09:00",
+      end_time: "10:00",
+      location_text: "Room 1",
+    },
+  ],
+};
+const importCatalog = (classes = [pisaClass], term = 2268) =>
+  db.query("select public.import_pisa_classes($1, $2::jsonb)", [
+    term,
+    JSON.stringify(classes),
+  ]);
+
+test("PISA refreshes replace catalog meetings without duplicates or changes to saved IDs and manual classes", async () => {
   await db.exec("reset role; set role service_role;");
-  const importClass = async (term, name, location) => {
-    const { rows } = await db.query(
-      `insert into public.classes (code, name, term, class_number, location, day_and_time)
-       values ('TEST 100 - 01', $1, $2, 12345, $3, 'MWF 09:00AM-10:00AM')
-       on conflict (term, class_number) do update
-       set name = excluded.name, location = excluded.location
-       returning id`,
-      [name, term, location],
-    );
-    return rows[0].id;
-  };
-  const fallId = await importClass(2268, "Fall class", "Room 1");
+  const before = (
+    await db.query("select * from public.class_meetings order by id")
+  ).rows;
+  await importCatalog();
+  const {
+    rows: [initial],
+  } = await db.query("select * from public.classes where term = 2268");
+  const fallId = initial.id;
+  assert.equal(initial.owner_id, null);
+  assert.ok(initial.updated_at);
   await asUser(alice);
   await db.query("insert into public.user_classes values ($1, $2)", [
     alice,
@@ -422,9 +450,66 @@ test("catalog upserts preserve saved class IDs and distinguish the same PISA num
   ]);
 
   await db.exec("reset role; set role service_role;");
-  assert.equal(await importClass(2268, "Updated fall class", "Room 2"), fallId);
-  const winterId = await importClass(2270, "Winter class", "Room 3");
-  assert.notEqual(winterId, fallId);
+  const updated = {
+    ...pisaClass,
+    name: "Updated fall class",
+    location: "Room 2",
+    meetings: [
+      {
+        days_of_week: [2],
+        start_time: "12:00",
+        end_time: "13:00",
+        location_text: "Room 2",
+      },
+      {
+        days_of_week: [4],
+        start_time: "11:00",
+        end_time: "13:00",
+        location_text: "Room 2",
+      },
+    ],
+  };
+  await importCatalog([updated]);
+  await importCatalog([updated]);
+  await importCatalog([{ ...pisaClass, name: "Winter class" }], 2270);
+  assert.equal(
+    (
+      await db.query(
+        "select count(*) from public.classes where class_number = 12345",
+      )
+    ).rows[0].count,
+    2,
+  );
+  assert.deepEqual(
+    (
+      await db.query(
+        "select * from public.class_meetings where class_id <= 3 order by id",
+      )
+    ).rows,
+    before,
+  );
+  assert.deepEqual(
+    (
+      await db.query(
+        "select days_of_week, start_time, end_time, location_text from public.class_meetings where class_id = $1 order by id",
+        [fallId],
+      )
+    ).rows,
+    [
+      {
+        days_of_week: [2],
+        start_time: "12:00:00",
+        end_time: "13:00:00",
+        location_text: "Room 2",
+      },
+      {
+        days_of_week: [4],
+        start_time: "11:00:00",
+        end_time: "13:00:00",
+        location_text: "Room 2",
+      },
+    ],
+  );
   await asUser(alice);
   assert.deepEqual(
     (
@@ -436,6 +521,99 @@ test("catalog upserts preserve saved class IDs and distinguish the same PISA num
     ).rows,
     [{ name: "Updated fall class", location: "Room 2" }],
   );
+});
+
+test("a bad meeting rolls back the entire import, preserving the prior classes and meetings", async () => {
+  await db.exec("reset role; set role service_role;");
+  await importCatalog();
+  const classes = (await db.query("select * from public.classes order by id"))
+    .rows;
+  const meetings = (
+    await db.query("select * from public.class_meetings order by id")
+  ).rows;
+  await assert.rejects(
+    importCatalog([
+      { ...pisaClass, name: "Should roll back", meetings: [] },
+      {
+        ...pisaClass,
+        class_number: 12346,
+        meetings: [{ start_time: "10:00", end_time: "09:00" }],
+      },
+    ]),
+    { code: "23514" },
+  );
+  assert.deepEqual(
+    (await db.query("select * from public.classes order by id")).rows,
+    classes,
+  );
+  assert.deepEqual(
+    (await db.query("select * from public.class_meetings order by id")).rows,
+    meetings,
+  );
+});
+
+test("an unknown schedule removes old parsed meetings and keeps the new raw text", async () => {
+  await db.exec("reset role; set role service_role;");
+  await importCatalog();
+  await importCatalog([
+    { ...pisaClass, day_and_time: "Cancelled Cancelled", meetings: [] },
+  ]);
+  assert.deepEqual(
+    (
+      await db.query(`
+    select c.day_and_time, count(m.id) as meetings from public.classes c
+    left join public.class_meetings m on m.class_id = c.id
+    where c.class_number = 12345 group by c.id
+  `)
+    ).rows,
+    [{ day_and_time: "Cancelled Cancelled", meetings: 0 }],
+  );
+});
+
+test("only the backend can import PISA classes, and import keys are required", async () => {
+  await assert.rejects(importCatalog(), { code: "42501" });
+  await db.exec("reset role; set role anon;");
+  await assert.rejects(importCatalog(), { code: "42501" });
+  await db.exec("reset role; set role service_role;");
+  await assert.rejects(importCatalog([pisaClass], null), /positive PISA term/);
+  await assert.rejects(
+    importCatalog([{ ...pisaClass, class_number: null }]),
+    /positive PISA class number/,
+  );
+});
+
+test("removing the legacy public-read policy restores class privacy without deleting saves", async () => {
+  await db.exec(`
+    reset role;
+    grant select on public.classes to anon;
+    create policy "Classes are readable by everyone" on public.classes
+      for select to anon, authenticated using (true);
+  `);
+  const migration = await readFile(
+    new URL(
+      "../../supabase/migrations/20261102000000_remove_public_class_read.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  await db.exec(migration);
+  await asUser(alice);
+  assert.deepEqual(
+    (await db.query("select id from public.classes order by id")).rows,
+    [{ id: 1 }, { id: 2 }],
+  );
+  assert.deepEqual(
+    (
+      await db.query(
+        "select class_id from public.user_classes order by class_id",
+      )
+    ).rows,
+    [{ class_id: 2 }],
+  );
+  await db.exec("reset role; set role anon;");
+  await assert.rejects(db.query("select * from public.classes"), {
+    code: "42501",
+  });
 });
 
 test("rebuilding clears class data and restores private saves without deleting user accounts", async () => {
