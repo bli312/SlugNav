@@ -41,109 +41,48 @@ ALTER TABLE public.user_classes ENABLE ROW LEVEL SECURITY;
 Supabase populates `auth.uid()` from the user's verified JWT. For private tables, always enforce ownership:
 
 ```sql
--- Example for user_classes table (Story 2.2 / 2.3)
+-- Schema for user_classes join table (linking users to classes)
 CREATE TABLE public.user_classes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  class_id text NOT NULL,
-  location text,
-  meeting_days text[],
-  start_time time,
-  end_time time,
-  created_at timestamptz DEFAULT now()
+  class_id bigint NOT NULL REFERENCES public.classes(id) ON DELETE CASCADE,
+  PRIMARY KEY (user_id, class_id)
 );
 
 ALTER TABLE public.user_classes ENABLE ROW LEVEL SECURITY;
 
--- 1. SELECT: Users can only see their own classes
-CREATE POLICY "Users can view only their own classes"
+-- 1. SELECT: Users can only see their own saved classes
+CREATE POLICY user_classes_read
 ON public.user_classes
 FOR SELECT
-USING (auth.uid() = user_id);
+TO authenticated
+USING (user_id = (SELECT auth.uid()));
 
--- 2. INSERT: Users can only insert for their own user_id
-CREATE POLICY "Users can insert their own classes"
+-- 2. INSERT: Users can only save classes to their own account
+CREATE POLICY user_classes_insert
 ON public.user_classes
 FOR INSERT
-WITH CHECK (auth.uid() = user_id);
-
--- 3. UPDATE: Users can only update their own classes
-CREATE POLICY "Users can update their own classes"
-ON public.user_classes
-FOR UPDATE
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
-
--- 4. DELETE: Users can only delete their own classes
-CREATE POLICY "Users can delete their own classes"
-ON public.user_classes
-FOR DELETE
-USING (auth.uid() = user_id);
-```
-
-### Rule 3.3: Crowd-Sourced Classrooms & Community Data (Stories 2.4 & Moderation)
-SlugNav uses a **Peer-Verified Crowdsourcing Model** with Admin moderation for community classrooms and amenities:
-
-1. **Lifecycle States**:
-   - `pending`: Newly submitted by a student. Visible to all students with a clear `"Pending Verification"` badge.
-   - `approved`: Confirmed by an admin. Becomes official campus infrastructure data.
-   - `rejected`: Marked invalid/malicious by an admin. Hidden from public view.
-
-2. **Access & Mutation Policies**:
-   - **Visibility (SELECT)**: All authenticated `@ucsc.edu` users can view `approved` and `pending` classrooms. `rejected` items are hidden from non-admin users.
-   - **Creator Permissions (Locking After Approval)**:
-     - While `status = 'pending'`, the creator may update details or delete (undo) their submission.
-     - **Once `status = 'approved'`, the creator cannot undo, edit, or delete the submission.** It becomes locked community data to prevent disruptive deletions.
-   - **Admin Permissions**: Only users with the `admin` role can change the `status` to `approved`/`rejected`, or edit/delete approved classrooms.
-
-3. **Peer Confirmation & Voting Integrity (Story 2.4)**:
-   - Students can verify that a pending classroom genuinely exists.
-   - **Anti-Tampering Rule**: Peer confirmations must be recorded in a dedicated table (e.g. `classroom_confirmations`) with a unique constraint `UNIQUE(classroom_id, user_id)` so each student can only confirm once. Self-confirmations should be disallowed or excluded from trust scores.
-
-```sql
--- RLS Example for Crowd-Sourced Classrooms
-ALTER TABLE public.custom_classrooms ENABLE ROW LEVEL SECURITY;
-
--- 1. SELECT: Students see approved and pending classrooms (admins see all)
-CREATE POLICY "View approved and pending classrooms"
-ON public.custom_classrooms
-FOR SELECT
-USING (
-  status IN ('approved', 'pending')
-  OR (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
-);
-
--- 2. INSERT: Students can submit with status enforced as 'pending'
-CREATE POLICY "Students submit pending classrooms"
-ON public.custom_classrooms
-FOR INSERT
+TO authenticated
 WITH CHECK (
-  auth.uid() = created_by
-  AND status = 'pending'
+  user_id = (SELECT auth.uid())
+  AND EXISTS (
+    SELECT 1 FROM public.classes c
+    WHERE c.id = user_classes.class_id
+  )
 );
 
--- 3. UPDATE: Creators can edit only while pending; Admins can edit anytime
-CREATE POLICY "Creators edit while pending; Admins edit anytime"
-ON public.custom_classrooms
-FOR UPDATE
-USING (
-  (auth.uid() = created_by AND status = 'pending')
-  OR (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
-);
-
--- 4. DELETE: Creators can undo only while pending; Admins can delete anytime
-CREATE POLICY "Creators delete while pending; Admins delete anytime"
-ON public.custom_classrooms
+-- 3. DELETE: Users can only remove classes from their own account
+CREATE POLICY user_classes_delete
+ON public.user_classes
 FOR DELETE
-USING (
-  (auth.uid() = created_by AND status = 'pending')
-  OR (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
-);
+TO authenticated
+USING (user_id = (SELECT auth.uid()));
 ```
 
-### Rule 3.4: No Service Role Key in App
+
+### Rule 3.3: No Service Role Key in App
 - Only use `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the mobile app.
-- Never place `SUPABASE_SERVICE_ROLE_KEY` inside `.env.local` or any `EXPO_PUBLIC_` variable.
+- Secret keys (such as `BACKEND_SUPABASE_SECRET_KEY` for local scripts) belong only in `.env.local` (never committed) and must NEVER be prefixed with `EXPO_PUBLIC_` or placed in `.env.example`.
+- Mobile client code must never import or consume service-role keys.
 
 ---
 

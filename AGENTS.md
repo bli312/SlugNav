@@ -40,9 +40,6 @@ can understand and maintain.
   never rely on frontend UI checks alone to restrict data access.
 - Student account data and schedules are private by default; scope queries and
   policies to the authenticated owner (`auth.uid() = user_id`).
-- For crowd-sourced submissions (e.g., classrooms), prevent creators from
-  modifying or deleting records once approved, and enforce unique constraints on
-  peer confirmations.
 - Protect private user data: use synthetic data in tests and examples, keep
   secrets out of code and logs, and never weaken access controls to pass a test.
 
