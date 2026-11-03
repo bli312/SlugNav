@@ -15,10 +15,10 @@ import express from "express";
 import { ENDPOINT } from "@/components/classes/pisa/PisaElements";
 import getCurrentTerm from "@/components/classes/pisa/CurrentTerm";
 import scrapeClass from "@/components/classes/pisa/ScrapePisaClass";
+import { savePisaClasses } from "@/components/classes/pisa/SavePisaClasses";
 import { getSupabase } from "./backend-supabase";
 
 const DEFAULT_TERM = 2268;
-const SUPABASE_TABLE = "pisa_classes";
 
 const app = express();
 app.use(express.json());
@@ -59,19 +59,11 @@ app.get("/api/classes", async (req, res) => {
       .map((_, element) => scrapeClass($, element))
       .toArray();
 
-    // format then upsert into supabase
-    const formattedClasses = classes.map((column) => ({
-      code: column.code,
-      name: column.name,
-      class_number: column.number,
-      location: column.meetingInfo.location,
-      day_and_time: column.meetingInfo.dayAndTime,
-      instructor_name: column.instructor.name,
-      term: currentTerm,
-    }));
-    const { data, error } = await getSupabase()
-      .from(SUPABASE_TABLE)
-      .upsert(formattedClasses, { onConflict: "class_number" });
+    const { formattedClasses, data, error } = await savePisaClasses(
+      getSupabase(),
+      classes,
+      currentTerm,
+    );
 
     if (error) {
       console.log(`[SUPABASE ERROR] ${error}`);
@@ -96,6 +88,6 @@ app.get("/api/classes", async (req, res) => {
   }
 });
 
-app.listen(3000, () =>
+app.listen(3000, "127.0.0.1", () =>
   console.log("[SYSTEM] Proxy server running on port 3000"),
 );

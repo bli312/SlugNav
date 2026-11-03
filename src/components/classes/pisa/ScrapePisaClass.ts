@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
-import { AnyNode, Element } from "domhandler";
-import { PisaClass } from "./PisaElements";
+import type { AnyNode, Element } from "domhandler";
+import type { PisaClass } from "./PisaElements.ts";
 
 export default function scrapeClass(
   $: cheerio.CheerioAPI,
@@ -19,12 +19,11 @@ export default function scrapeClass(
     .text()
     .replace("Location:", "")
     .trim();
-  const dayAndTime = find(
+  const schedule = find(
     ".panel-body .row > div:nth-child(3) > div:nth-child(2)",
-  )
-    .text()
-    .replace("Day and Time:", "")
-    .trim();
+  ).clone();
+  schedule.find("br").replaceWith("\n");
+  const dayAndTime = schedule.text().replace("Day and Time:", "").trim();
   return {
     code,
     name,
