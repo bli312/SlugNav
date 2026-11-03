@@ -1,6 +1,19 @@
 import type { Class } from "./types.ts";
 import { weekdays } from "./manualClass.ts";
 
+export function matchesClass(item: Class, search: string): boolean {
+  return [
+    item.courseCode,
+    item.title,
+    item.instructor,
+    ...item.meetings.map((meeting) => meeting.location),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .includes(search.trim().toLowerCase());
+}
+
 export type ClassRow = {
   id: number;
   owner_id: string | null;

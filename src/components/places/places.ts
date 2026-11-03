@@ -9,6 +9,22 @@ export const placeTypes = {
 export type PlaceType = keyof typeof placeTypes;
 export type Place = MapLocation & { id: number; name: string; type: PlaceType };
 
+export async function getPlaces(client: SupabaseClient): Promise<Place[]> {
+  const places: Place[] = [];
+  while (true) {
+    const { data, error } = await client
+      .from("places")
+      .select("id, name, type, latitude, longitude")
+      .order("name")
+      .order("id")
+      .range(places.length, places.length + 499)
+      .overrideTypes<Place[], { merge: false }>();
+    if (error) throw error;
+    if (!data?.length) return places;
+    places.push(...data);
+  }
+}
+
 export async function createPlace(
   client: SupabaseClient,
   name: string,

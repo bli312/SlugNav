@@ -12,6 +12,8 @@ import ClassListHeader from "./ClassListHeader";
 import ManualClassForm from "./ManualClassForm";
 import useClasses from "./useClasses";
 import type { ClassView } from "./types.ts";
+import Searchbar from "../../search/Searchbar";
+import { matchesClass } from "./classData";
 
 export default function ClassListScreen() {
   const { session } = useAuth();
@@ -25,6 +27,7 @@ function ClassesForUser({ userId }: { userId: string }) {
     useClasses(userId);
   const [view, setView] = useState<ClassView>("schedule");
   const [showManual, setShowManual] = useState(false);
+  const [search, setSearch] = useState("");
 
   if (showManual) {
     return (
@@ -50,26 +53,37 @@ function ClassesForUser({ userId }: { userId: string }) {
   return (
     <FlatList
       style={styles.screen}
-      data={classes.filter((item) =>
-        view === "schedule" ? item.saved : item.ownerId === null,
+      data={classes.filter(
+        (item) =>
+          (view === "schedule" ? item.saved : item.ownerId === null) &&
+          matchesClass(item, search),
       )}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.list}
       ListHeaderComponent={
-        <ClassListHeader
-          view={view}
-          onViewChange={setView}
-          error={error}
-          busy={pendingId !== null}
-          onAddManual={() => setShowManual(true)}
-        />
+        <View style={styles.header}>
+          <ClassListHeader
+            view={view}
+            onViewChange={setView}
+            error={error}
+            busy={pendingId !== null}
+            onAddManual={() => setShowManual(true)}
+          />
+          <Searchbar
+            search={search}
+            onSearchChange={setSearch}
+            placeholder="Search classes"
+          />
+        </View>
       }
       ListEmptyComponent={
         error ? undefined : (
           <Text style={styles.empty}>
-            {view === "schedule"
-              ? "No saved classes yet. Browse classes or add your own."
-              : "No classes available yet."}
+            {search.trim()
+              ? "No matching classes."
+              : view === "schedule"
+                ? "No saved classes yet. Browse classes or add your own."
+                : "No classes available yet."}
           </Text>
         )
       }
@@ -86,6 +100,7 @@ function ClassesForUser({ userId }: { userId: string }) {
 }
 
 const styles = StyleSheet.create({
+  header: { gap: 8 },
   screen: { flex: 1, backgroundColor: "#F6F8F5" },
   centered: {
     flex: 1,

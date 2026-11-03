@@ -33,6 +33,25 @@ beforeEach(() => {
   api.removeClass.mockResolvedValue(undefined);
 });
 
+test("the shared search input filters classes within the selected schedule or catalog", async () => {
+  api.getClasses.mockResolvedValue([
+    { ...catalog, saved: true },
+    { ...catalog, id: "2", title: "Other course", courseCode: "TEST 202" },
+  ]);
+  const user = userEvent.setup();
+  await render(<ClassListScreen />);
+  await screen.findByText("Catalog class");
+  expect(screen.queryByText("Other course")).not.toBeOnTheScreen();
+  await user.press(screen.getByRole("tab", { name: "Browse classes" }));
+  await user.type(screen.getByLabelText("Search classes"), "202");
+  expect(screen.getByText("Other course")).toBeOnTheScreen();
+  expect(screen.queryByText("Catalog class")).not.toBeOnTheScreen();
+  await user.press(screen.getByRole("tab", { name: "My schedule" }));
+  expect(screen.getByText("No matching classes.")).toBeOnTheScreen();
+  await user.clear(screen.getByLabelText("Search classes"));
+  expect(screen.getByText("Catalog class")).toBeOnTheScreen();
+});
+
 test("manual fields start blank and meeting days can be selected and cleared", async () => {
   const user = userEvent.setup();
   await render(
