@@ -10,6 +10,7 @@
     "@types/react": "~19.3.0",
     "@typescript-eslint/eslint-plugin": "^8.72.0",
     "@typescript-eslint/parser": "^8.72.0",
+    "c8": "^12.0.0",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
@@ -47,17 +48,32 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "export": "expo export",
-    "check:scripts": "npm run typecheck && npm run lint && npm test",
+    "check:scripts": "npm run typecheck && npm run lint && npm run test:coverage",
     "lint": "eslint .",
     "format": "prettier --write **/*.{js,jsx,ts,tsx,json}",
     "test": "node --experimental-strip-types --test && jest --runInBand",
+    "test:coverage": "c8 node --experimental-strip-types --test && jest --runInBand --coverage",
     "prepare": "husky"
+  },
+  "c8": {
+    "all": true,
+    "include": ["src/**/*.ts"],
+    "exclude": ["src/**/*.d.ts", "src/**/types.ts"],
+    "reporter": ["text", "lcovonly"],
+    "reports-dir": "coverage/node"
   },
   "jest": {
     "preset": "jest-expo",
     "testMatch": [
       "<rootDir>/tests/**/*.spec.tsx"
-    ]
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/**/types.ts"
+    ],
+    "coverageDirectory": "coverage/components",
+    "coverageReporters": ["text", "lcovonly"]
   },
   "dependencies": {
     "@maplibre/maplibre-react-native": "^11.5.0",
