@@ -93,7 +93,10 @@ export default class LeafletMap {
     return this.markers
       .map((marker) => {
         let script = `L.marker([${marker.latitude}, ${marker.longitude}]).addTo(window.map)`;
-        if (marker.popup) script += `.bindPopup(${loadPopup(marker.popup)})`;
+        if (marker.popup) {
+          script += `.bindPopup(${loadPopup(marker.popup)})`;
+          if (marker.openPopup) script += ".openPopup()";
+        }
         return script + ";";
       })
       .join("\n");

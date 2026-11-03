@@ -2,8 +2,53 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createPlace } from "../../src/components/places/places.ts";
 import { readMapLocation } from "../../src/components/leaflet/mapLocation.ts";
+import { createClient } from "@supabase/supabase-js";
+import { getPlaces } from "../../src/components/places/places.ts";
 
 const location = { latitude: 37, longitude: -122 };
+
+test("loading places reads every page and reports database failures", async () => {
+  const records = Array.from({ length: 1001 }, (_, id) => ({
+    id: id + 1,
+    name: `Place ${id}`,
+    type: "classroom",
+    ...location,
+  }));
+  let fail = false;
+  const client = createClient(
+    "https://example.supabase.co",
+    "sb_publishable_test",
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+      global: {
+        fetch: async (input) => {
+          const url = new URL(input);
+          assert.equal(url.pathname, "/rest/v1/places");
+          assert.equal(
+            url.searchParams.get("select"),
+            "id,name,type,latitude,longitude",
+          );
+          assert.equal(url.searchParams.get("order"), "name.asc,id.asc");
+          if (fail)
+            return Response.json(
+              { code: "42501", message: "Denied" },
+              { status: 403 },
+            );
+          const offset = Number(url.searchParams.get("offset"));
+          const limit = Number(url.searchParams.get("limit"));
+          return Response.json(records.slice(offset, offset + limit));
+        },
+      },
+    },
+  );
+  assert.deepEqual(await getPlaces(client), records);
+  fail = true;
+  await assert.rejects(getPlaces(client), { code: "42501" });
+});
 
 test("creating a place sends only its editable fields and returns the saved record", async () => {
   let sent;
