@@ -16,10 +16,16 @@ import { placeTypes, type Place } from "./places";
 type Props = {
   markers: Marker[];
   onPlaceAdded?: (place: Place) => void;
+  onCenterChange?: (center: MapLocation) => void;
   children?: React.ReactNode;
 };
 
-export default function PlaceMap({ markers, onPlaceAdded, children }: Props) {
+export default function PlaceMap({
+  markers,
+  onPlaceAdded,
+  onCenterChange,
+  children,
+}: Props) {
   const [adding, setAdding] = useState(false);
   const [location, setLocation] = useState<MapLocation | null>(null);
   const [savedMarkers, setSavedMarkers] = useState<Marker[] | null>(null);
@@ -54,6 +60,7 @@ export default function PlaceMap({ markers, onPlaceAdded, children }: Props) {
       <LeafletDisplay
         markers={savedMarkers ?? markers}
         onLocationSelect={adding ? setLocation : undefined}
+        onCenterChange={onCenterChange}
       />
       {adding ? (
         <AddPlaceForm

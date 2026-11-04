@@ -4,15 +4,18 @@ import { WebView } from "react-native-webview";
 import Marker from "./LeafletMarker";
 import LeafletMap from "./LeafletMap";
 import { readMapLocation, type MapLocation } from "./mapLocation";
+import { readMapCenter } from "./mapCenter";
 
 interface LeafletDisplayProps {
   markers: Array<Marker>;
   onLocationSelect?: (location: MapLocation) => void;
+  onCenterChange?: (center: MapLocation) => void;
 }
 
 export default function LeafletDisplay({
   markers,
   onLocationSelect,
+  onCenterChange,
 }: LeafletDisplayProps) {
   const webView = useRef<WebView<object>>(null);
   const frame = useRef<HTMLIFrameElement>(null);
@@ -21,8 +24,10 @@ export default function LeafletDisplay({
     (data: string) => {
       const location = readMapLocation(data);
       if (location) onLocationSelect?.(location);
+      const center = readMapCenter(data);
+      if (center) onCenterChange?.(center);
     },
-    [onLocationSelect],
+    [onLocationSelect, onCenterChange],
   );
   const updatePicker = useCallback(() => {
     if (Platform.OS === "web") {

@@ -3,6 +3,9 @@ import type { Place } from "./places.ts";
 
 const EARTH_RADIUS_METERS = 6_371_000;
 
+// About a 4-minute walk.
+export const NEARBY_RADIUS_METERS = 300;
+
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
 // Straight-line ("as the crow flies") distance using the haversine formula.

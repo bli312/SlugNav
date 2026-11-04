@@ -13,14 +13,23 @@ export function isMapLocation(value: unknown): value is MapLocation {
   );
 }
 
-export function readMapLocation(data: string): MapLocation | null {
+// Reads a location message sent by the map page, such as a tapped spot
+// ("place-location") or the map's center ("map-center").
+export function readLocationMessage(
+  data: string,
+  type: string,
+): MapLocation | null {
   try {
     const message = JSON.parse(data);
-    if (message?.type === "place-location" && isMapLocation(message)) {
+    if (message?.type === type && isMapLocation(message)) {
       return { latitude: message.latitude, longitude: message.longitude };
     }
   } catch {
-    // Other WebView messages are not map selections.
+    // Messages that aren't JSON are not map locations.
   }
   return null;
+}
+
+export function readMapLocation(data: string): MapLocation | null {
+  return readLocationMessage(data, "place-location");
 }
