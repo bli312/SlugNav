@@ -136,7 +136,11 @@ target. Changes with no added or modified measured source lines pass the check.
 - Adding places requires applying
   [`20261103000000_places.sql`](supabase/migrations/20261103000000_places.sql)
   once in Supabase SQL Editor. On the home map, choose **Add place**, tap a
-  location, enter its name/type, and save. Saved-place search is separate work.
+  location, enter its name/type, and save.
+- Home search reads classes and places from Supabase. Select the categories to
+  include and type to search; an empty search shows no results. Tap a
+  place to show its map pin. Classes show their saved meeting/location text;
+  linking those locations to map coordinates is separate work.
 
 `npm audit` currently reports upstream Expo dependency advisories. Review them
 before releases; `npm audit fix --force` can break Expo SDK compatibility.

@@ -13,7 +13,13 @@ import type { MapLocation } from "../leaflet/mapLocation";
 import AddPlaceForm from "./AddPlaceForm";
 import { placeTypes, type Place } from "./places";
 
-export default function PlaceMap({ markers }: { markers: Marker[] }) {
+type Props = {
+  markers: Marker[];
+  onPlaceAdded?: (place: Place) => void;
+  children?: React.ReactNode;
+};
+
+export default function PlaceMap({ markers, onPlaceAdded, children }: Props) {
   const [adding, setAdding] = useState(false);
   const [location, setLocation] = useState<MapLocation | null>(null);
   const [savedMarkers, setSavedMarkers] = useState<Marker[] | null>(null);
@@ -27,7 +33,7 @@ export default function PlaceMap({ markers }: { markers: Marker[] }) {
   function finish(place?: Place) {
     setAdding(false);
     setLocation(null);
-    if (place)
+    if (place) {
       setSavedMarkers([
         {
           latitude: place.latitude,
@@ -35,6 +41,8 @@ export default function PlaceMap({ markers }: { markers: Marker[] }) {
           popup: createPopup(place.name, placeTypes[place.type], undefined),
         },
       ]);
+      onPlaceAdded?.(place);
+    }
   }
 
   return (
@@ -42,6 +50,7 @@ export default function PlaceMap({ markers }: { markers: Marker[] }) {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      {!adding && children}
       <LeafletDisplay
         markers={savedMarkers ?? markers}
         onLocationSelect={adding ? setLocation : undefined}

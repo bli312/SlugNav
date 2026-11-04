@@ -1,25 +1,16 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import { StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/providers/auth-provider";
 
 import AccountHeader from "@/components/AccountHeader";
-import Searchbar from "@/components/search/Searchbar";
-import PlaceMap from "@/components/places/PlaceMap";
-import Marker, { parse } from "@/components/leaflet/LeafletMarker";
-import FlatListSearch from "@/components/search/FlatListSearch";
-import { mockClasses } from "@/components/classes/mockClasses";
-
-// TODO replace testing data with ucsc api
-const data: Array<Marker> = parse(mockClasses);
+import CampusSearch from "@/components/search/CampusSearch";
 
 export default function CampusMap() {
   const { session, signOut, busy, error } = useAuth();
   const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [filteredMarkers, setFilteredMarkers] = useState(data);
   return (
     <SafeAreaView style={styles.container}>
       {/* Navigation Bar (NavBar) */}
@@ -35,17 +26,7 @@ export default function CampusMap() {
         </Text>
       )}
 
-      {/* Searchbar */}
-      <Searchbar
-        search={search}
-        markers={data}
-        onSearchChange={setSearch}
-        onFilteredMarkersChange={setFilteredMarkers}
-      />
-      <FlatListSearch search={search} filteredMarkers={filteredMarkers} />
-
-      {/* Leaflet Map */}
-      <PlaceMap markers={filteredMarkers} />
+      <CampusSearch />
     </SafeAreaView>
   );
 }
