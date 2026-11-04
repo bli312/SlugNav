@@ -19,6 +19,7 @@ export default function CampusMap() {
         busy={busy}
         onSignOut={() => void signOut()}
         onNavigateClasses={() => router.push("/classes")}
+        onNavigateFeedbackReports={() => router.push("/feedback-reports")}
       />
       {error && (
         <Text accessibilityRole="alert" style={styles.error}>

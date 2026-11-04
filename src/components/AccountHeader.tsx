@@ -6,6 +6,7 @@ interface AccountHeaderProps {
   busy: boolean;
   onSignOut: () => void;
   onNavigateClasses: () => void;
+  onNavigateFeedbackReports?: () => void;
 }
 
 export default function AccountHeader({
@@ -13,6 +14,7 @@ export default function AccountHeader({
   busy,
   onSignOut,
   onNavigateClasses,
+  onNavigateFeedbackReports,
 }: AccountHeaderProps) {
   return (
     <View style={styles.account}>
@@ -22,6 +24,12 @@ export default function AccountHeader({
         </Text>
         <Text numberOfLines={1}>{userEmail}</Text>
       </View>
+      {onNavigateFeedbackReports && (
+        <Button
+          title="Feedback and Report"
+          onPress={onNavigateFeedbackReports}
+        />
+      )}
       <Button title="Classes" onPress={onNavigateClasses} />
       <Button title="Sign Out" disabled={busy} onPress={onSignOut} />
     </View>
@@ -32,7 +40,8 @@ const styles = StyleSheet.create({
   account: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    flexWrap: "wrap",
+    gap: 8,
     padding: 16,
   },
   identity: {
