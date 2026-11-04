@@ -50,8 +50,8 @@ jest.mock("react-native-webview", () => {
   };
 });
 
-// Synthetic places: the fountain is about 56 m north of the room,
-// and the bathroom is about 1.1 km away.
+// Synthetic places: the fountain is about 182 ft north of the room,
+// and the bathroom is about 0.7 mi away.
 const room: placesApi.Place = {
   id: 1,
   name: "Sample Room",
@@ -124,16 +124,16 @@ test("turning off a type removes its pins without rebuilding the map", async () 
   expect(mapHTML()).toBe(htmlBefore);
 });
 
-test("Near me lists places within 300 m of you, closest first", async () => {
+test("Near me lists places within 1,000 ft of you, closest first", async () => {
   const user = userEvent.setup();
   allowLocation(37, -122);
   await render(<CampusSearch />);
   await user.press(screen.getByRole("checkbox", { name: "Near me" }));
-  expect(await screen.findByText("Within 300 m of you")).toBeOnTheScreen();
+  expect(await screen.findByText("Within 1,000 ft of you")).toBeOnTheScreen();
   const distances = screen
-    .getAllByText(/ · \d+ m$/)
+    .getAllByText(/ · \d+ ft$/)
     .map((item) => item.props.children.join(""));
-  expect(distances).toEqual(["Classroom · 0 m", "Water fountain · 56 m"]);
+  expect(distances).toEqual(["Classroom · 0 ft", "Water fountain · 182 ft"]);
   expect(screen.queryByText("Far Bathroom")).not.toBeOnTheScreen();
 });
 
@@ -142,7 +142,7 @@ test("Near me shows a 'you are here' dot, and turning it off removes it", async 
   allowLocation(37, -122);
   await render(<CampusSearch />);
   await user.press(screen.getByRole("checkbox", { name: "Near me" }));
-  await screen.findByText("Within 300 m of you");
+  await screen.findByText("Within 1,000 ft of you");
   expect(mockInjected).toContain(
     'window.setUserLocation?.({"latitude":37,"longitude":-122}, true); true;',
   );
@@ -152,13 +152,13 @@ test("Near me shows a 'you are here' dot, and turning it off removes it", async 
   );
 });
 
-test("Near me says so when nothing is within 300 m", async () => {
+test("Near me says so when nothing is within 1,000 ft", async () => {
   const user = userEvent.setup();
   allowLocation(38, -122);
   await render(<CampusSearch />);
   await user.press(screen.getByRole("checkbox", { name: "Near me" }));
   expect(
-    await screen.findByText("No places within 300 m of you."),
+    await screen.findByText("No places within 1,000 ft of you."),
   ).toBeOnTheScreen();
 });
 
@@ -193,9 +193,9 @@ test("typing a search hides the Near me list and shows search results", async ()
   allowLocation(37, -122);
   await render(<CampusSearch />);
   await user.press(screen.getByRole("checkbox", { name: "Near me" }));
-  await screen.findByText("Within 300 m of you");
+  await screen.findByText("Within 1,000 ft of you");
   await user.type(screen.getByLabelText("Search classes and places"), "Far");
-  expect(screen.queryByText("Within 300 m of you")).not.toBeOnTheScreen();
+  expect(screen.queryByText("Within 1,000 ft of you")).not.toBeOnTheScreen();
   expect(
     screen.getByRole("button", { name: "Far Bathroom Bathroom" }),
   ).toBeOnTheScreen();

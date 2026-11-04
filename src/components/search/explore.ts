@@ -1,5 +1,6 @@
 import type Marker from "../leaflet/LeafletMarker.ts";
 import { createPopup } from "../leaflet/LeafletPopup.ts";
+import { METERS_PER_FOOT } from "../places/nearby.ts";
 import { placeTypes, type Place } from "../places/places.ts";
 import type { SearchCategory } from "./searchResults.ts";
 
@@ -19,8 +20,12 @@ export function placeToMarker(place: Place): Marker {
   };
 }
 
+const METERS_PER_MILE = 1609.344;
+
+// Feet under 1,000 ft (e.g. "180 ft"), miles above (e.g. "0.3 mi").
 export function formatDistance(meters: number): string {
-  return meters < 1000
-    ? `${Math.round(meters)} m`
-    : `${(meters / 1000).toFixed(1)} km`;
+  const feet = meters / METERS_PER_FOOT;
+  return feet < 1000
+    ? `${Math.round(feet)} ft`
+    : `${(meters / METERS_PER_MILE).toFixed(1)} mi`;
 }

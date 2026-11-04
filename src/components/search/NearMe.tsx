@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text } from "react-native";
 import * as Location from "expo-location";
 
-import { NEARBY_RADIUS_METERS, type NearbyPlace } from "../places/nearby";
+import { NEARBY_RADIUS_FEET, type NearbyPlace } from "../places/nearby";
 import { placeTypes, type Place } from "../places/places";
 import {
   findUserLocation,
@@ -65,7 +65,9 @@ const messages = {
   error: "Couldn't get your location. Turn Near me off and on to try again.",
 };
 
-// Places within NEARBY_RADIUS_METERS of the user, closest first.
+const radius = NEARBY_RADIUS_FEET.toLocaleString("en-US");
+
+// Places within NEARBY_RADIUS_FEET of the user, closest first.
 export function NearMeList({
   userLocation,
   nearby,
@@ -94,14 +96,10 @@ export function NearMeList({
       keyExtractor={(place) => String(place.id)}
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={
-        <Text style={styles.heading}>
-          Within {NEARBY_RADIUS_METERS} m of you
-        </Text>
+        <Text style={styles.heading}>Within {radius} ft of you</Text>
       }
       ListEmptyComponent={
-        <Text style={styles.detail}>
-          No places within {NEARBY_RADIUS_METERS} m of you.
-        </Text>
+        <Text style={styles.detail}>No places within {radius} ft of you.</Text>
       }
       renderItem={({ item }) => (
         <Pressable

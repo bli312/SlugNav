@@ -48,9 +48,12 @@ test("a place becomes a pin at its location with its name and type", () => {
   });
 });
 
-test("distances show in meters under 1 km and kilometers above", () => {
-  assert.equal(formatDistance(120), "120 m");
-  assert.equal(formatDistance(999), "999 m");
-  assert.equal(formatDistance(1000), "1.0 km");
-  assert.equal(formatDistance(1250), "1.3 km");
+test("distances show in feet under 1,000 ft and miles above", () => {
+  // The input is meters: 1 ft = 0.3048 m and 1 mi = 1609.344 m.
+  assert.equal(formatDistance(0), "0 ft");
+  assert.equal(formatDistance(30.48), "100 ft");
+  assert.equal(formatDistance(999 * 0.3048), "999 ft");
+  assert.equal(formatDistance(1000 * 0.3048), "0.2 mi");
+  assert.equal(formatDistance(1609.344), "1.0 mi");
+  assert.equal(formatDistance(1.5 * 1609.344), "1.5 mi");
 });

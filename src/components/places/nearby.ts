@@ -3,8 +3,11 @@ import type { Place } from "./places.ts";
 
 const EARTH_RADIUS_METERS = 6_371_000;
 
-// About a 4-minute walk.
-export const NEARBY_RADIUS_METERS = 300;
+export const METERS_PER_FOOT = 0.3048;
+
+// About a 4-minute walk. Distances are calculated in meters and shown in feet.
+export const NEARBY_RADIUS_FEET = 1000;
+export const NEARBY_RADIUS_METERS = NEARBY_RADIUS_FEET * METERS_PER_FOOT;
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
