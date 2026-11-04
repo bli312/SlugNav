@@ -13,6 +13,11 @@ import {
   searchResults,
   type SearchCategory,
 } from "./searchResults";
+import { NearMeList, NearMeToggle, useUserLocation } from "./NearMe";
+import { placeToMarker, placesInCategories } from "./explore";
+import { NEARBY_RADIUS_METERS, nearbyPlaces } from "../places/nearby";
+
+const NO_PINS: Marker[] = [];
 
 export default function CampusSearch() {
   const { classes, places, loading, error, addPlace } = useCampusSearch();
@@ -22,6 +27,22 @@ export default function CampusSearch() {
   );
   const [markers, setMarkers] = useState<Marker[]>([]);
   const results = searchResults(classes, places, search, categories);
+  const [nearMe, setNearMe] = useState(false);
+  const userLocation = useUserLocation(nearMe);
+  // Every place of the selected types is pinned on the map. Memoized so the
+  // pins are only resent when places or filters change.
+  const shownPlaces = React.useMemo(
+    () => placesInCategories(places, categories),
+    [places, categories],
+  );
+  const pins = React.useMemo(
+    () => shownPlaces.map(placeToMarker),
+    [shownPlaces],
+  );
+  const nearby =
+    userLocation.status === "found"
+      ? nearbyPlaces(shownPlaces, userLocation.location, NEARBY_RADIUS_METERS)
+      : [];
 
   function select(place: Place) {
     Keyboard.dismiss();
@@ -36,7 +57,15 @@ export default function CampusSearch() {
   }
 
   return (
-    <PlaceMap markers={markers} onPlaceAdded={addPlace}>
+    <PlaceMap
+      markers={markers}
+      // A selected result takes over the map; otherwise show the filter pins.
+      pins={markers.length > 0 ? NO_PINS : pins}
+      userLocation={
+        userLocation.status === "found" ? userLocation.location : null
+      }
+      onPlaceAdded={addPlace}
+    >
       <View style={styles.controls}>
         <Searchbar
           search={search}
@@ -52,8 +81,17 @@ export default function CampusSearch() {
             setCategories(value);
             setMarkers([]);
           }}
-        />
+        >
+          <NearMeToggle checked={nearMe} onChange={setNearMe} />
+        </SearchFilters>
       </View>
+      {!search.trim() && !loading && !error && (
+        <NearMeList
+          userLocation={userLocation}
+          nearby={nearby}
+          onSelect={select}
+        />
+      )}
       {Boolean(search.trim()) &&
         (loading ? (
           <Text style={styles.message}>Loading search results…</Text>
