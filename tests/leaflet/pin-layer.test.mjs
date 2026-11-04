@@ -8,7 +8,8 @@ import {
 } from "../../src/components/leaflet/pinLayer.ts";
 import { createPopup } from "../../src/components/leaflet/LeafletPopup.ts";
 
-// A tiny stand-in for Leaflet that records which pins are on the map.
+// A tiny stand-in for Leaflet that records which pins, the "you are here"
+// dot, and the map's pans.
 function loadMap() {
   let onMessage;
   const layer = { pins: [] };
@@ -16,6 +17,9 @@ function loadMap() {
   layer.clearLayers = () => {
     layer.pins = [];
   };
+  const map = { dots: [], pans: [] };
+  // Copy the point: arrays made inside the vm sandbox fail strict deepEqual.
+  map.panTo = (point) => map.pans.push([...point]);
   const L = {
     layerGroup: () => layer,
     marker: ([latitude, longitude]) => {
@@ -27,17 +31,32 @@ function loadMap() {
       pin.addTo = (group) => group.pins.push(pin);
       return pin;
     },
+    circleMarker: ([latitude, longitude]) => {
+      const dot = { latitude, longitude };
+      dot.bindTooltip = (tooltip) => {
+        dot.tooltip = tooltip;
+        return dot;
+      };
+      dot.addTo = (target) => {
+        target.dots.push(dot);
+        return dot;
+      };
+      dot.remove = () => {
+        map.dots = map.dots.filter((item) => item !== dot);
+      };
+      return dot;
+    },
   };
   const window = {
     origin: "https://example.test",
     parent: {},
-    map: {},
+    map,
     addEventListener: (_type, callback) => {
       onMessage = callback;
     },
   };
   runInNewContext(pinLayerScript, { window, L });
-  return { window, layer, send: (event) => onMessage(event) };
+  return { window, layer, map, send: (event) => onMessage(event) };
 }
 
 test("new pins replace the old ones instead of piling up", () => {
@@ -74,6 +93,39 @@ test("only accepts pin messages from the app", () => {
   assert.equal(layer.pins.length, 0);
   send({ source: window.parent, origin: window.origin, data });
   assert.equal(layer.pins.length, 1);
+});
+
+test("one 'you are here' dot moves with the location and is removed with null", () => {
+  const { window, map } = loadMap();
+  window.setUserLocation({ latitude: 37, longitude: -122 }, true);
+  window.setUserLocation({ latitude: 37.001, longitude: -122 }, true);
+  assert.equal(map.dots.length, 1);
+  assert.equal(map.dots[0].latitude, 37.001);
+  assert.equal(map.dots[0].tooltip, "You are here");
+  window.setUserLocation(null, true);
+  assert.equal(map.dots.length, 0);
+});
+
+test("the map pans to the dot only when asked", () => {
+  const { window, map } = loadMap();
+  window.setUserLocation({ latitude: 37, longitude: -122 }, false);
+  assert.deepEqual(map.pans, []);
+  window.setUserLocation({ latitude: 37, longitude: -122 }, true);
+  assert.deepEqual(map.pans, [[37, -122]]);
+});
+
+test("the dot can be set by a message from the app", () => {
+  const { window, map, send } = loadMap();
+  const data = {
+    type: "set-user-location",
+    location: { latitude: 37, longitude: -122 },
+    pan: true,
+  };
+  send({ source: {}, origin: window.origin, data });
+  assert.equal(map.dots.length, 0);
+  send({ source: window.parent, origin: window.origin, data });
+  assert.equal(map.dots.length, 1);
+  assert.deepEqual(map.pans, [[37, -122]]);
 });
 
 test("pins keep the place's location and escape its popup text", () => {

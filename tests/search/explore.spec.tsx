@@ -137,6 +137,21 @@ test("Near me lists places within 300 m of you, closest first", async () => {
   expect(screen.queryByText("Far Bathroom")).not.toBeOnTheScreen();
 });
 
+test("Near me shows a 'you are here' dot, and turning it off removes it", async () => {
+  const user = userEvent.setup();
+  allowLocation(37, -122);
+  await render(<CampusSearch />);
+  await user.press(screen.getByRole("checkbox", { name: "Near me" }));
+  await screen.findByText("Within 300 m of you");
+  expect(mockInjected).toContain(
+    'window.setUserLocation?.({"latitude":37,"longitude":-122}, true); true;',
+  );
+  await user.press(screen.getByRole("checkbox", { name: "Near me" }));
+  expect(mockInjected.at(-1)).toBe(
+    "window.setUserLocation?.(null, true); true;",
+  );
+});
+
 test("Near me says so when nothing is within 300 m", async () => {
   const user = userEvent.setup();
   allowLocation(38, -122);

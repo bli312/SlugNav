@@ -5,7 +5,7 @@ import { loadPopup } from "./LeafletPopup.ts";
 export type Pin = { latitude: number; longitude: number; popup?: string };
 
 // Runs inside the Leaflet page on both native and web. Swaps the "browse" pins
-// in place, so changing filters doesn't reload the map or move the view.
+// and the "you are here" dot in place, so updates don't reload the map.
 export const pinLayerScript = `
   const pinLayer = L.layerGroup().addTo(window.map);
   window.setPins = (pins) => {
@@ -16,10 +16,23 @@ export const pinLayerScript = `
       marker.addTo(pinLayer);
     }
   };
+  let userDot;
+  window.setUserLocation = (location, pan) => {
+    if (userDot) userDot.remove();
+    userDot = undefined;
+    if (!location) return;
+    const point = [location.latitude, location.longitude];
+    userDot = L.circleMarker(point, {
+      radius: 8, color: '#ffffff', weight: 3,
+      fillColor: '#1a73e8', fillOpacity: 1
+    }).bindTooltip('You are here').addTo(window.map);
+    if (pan) window.map.panTo(point);
+  };
   window.addEventListener('message', (event) => {
-    if (event.source === window.parent && event.origin === window.origin
-        && event.data?.type === 'set-pins') {
-      window.setPins(event.data.pins);
+    if (event.source !== window.parent || event.origin !== window.origin) return;
+    if (event.data?.type === 'set-pins') window.setPins(event.data.pins);
+    if (event.data?.type === 'set-user-location') {
+      window.setUserLocation(event.data.location, event.data.pan === true);
     }
   });
 `;

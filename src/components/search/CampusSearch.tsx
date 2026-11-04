@@ -61,6 +61,9 @@ export default function CampusSearch() {
       markers={markers}
       // A selected result takes over the map; otherwise show the filter pins.
       pins={markers.length > 0 ? NO_PINS : pins}
+      userLocation={
+        userLocation.status === "found" ? userLocation.location : null
+      }
       onPlaceAdded={addPlace}
     >
       <View style={styles.controls}>
