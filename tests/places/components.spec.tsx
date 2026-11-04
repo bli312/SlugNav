@@ -63,6 +63,9 @@ test("map selections can move, saving uses the latest pin, and the saved pin is 
     "window.setPlacePicking?.(true); true;",
   );
   await fireEvent(screen.getByTestId("map"), "loadEnd");
+  
+  expect(screen.getByText("Creation is for all UCSC users.")).toBeOnTheScreen();
+
   expect(screen.getByLabelText("Place name")).toHaveDisplayValue("");
   expect(screen.getByRole("radio", { name: "Classroom" })).not.toBeChecked();
   const initialHTML = screen.getByTestId("map").props.source.html;
@@ -72,7 +75,7 @@ test("map selections can move, saving uses the latest pin, and the saved pin is 
   await user.press(screen.getByRole("radio", { name: "Classroom" }));
   expect(screen.getByTestId("map").props.source.html).toBe(initialHTML);
   await user.press(screen.getByRole("button", { name: "Save place" }));
-  expect(create).toHaveBeenCalledWith({}, place.name, "classroom", {
+  expect(create).toHaveBeenCalledWith(expect.anything(), place.name, "classroom", {
     latitude: 37,
     longitude: -122,
   });
