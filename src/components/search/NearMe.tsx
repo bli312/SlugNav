@@ -1,10 +1,42 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text } from "react-native";
+import * as Location from "expo-location";
 
 import { NEARBY_RADIUS_METERS, type NearbyPlace } from "../places/nearby";
 import { placeTypes, type Place } from "../places/places";
-import type { UserLocation } from "../places/useUserLocation";
+import {
+  findUserLocation,
+  type LocationApi,
+  type UserLocation,
+} from "../places/userLocation";
 import { formatDistance } from "./explore";
+
+const deviceLocation: LocationApi = {
+  requestForegroundPermissionsAsync: () =>
+    Location.requestForegroundPermissionsAsync(),
+  getCurrentPositionAsync: () =>
+    Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+};
+
+// Looks up the device's location each time `enabled` turns on.
+export function useUserLocation(enabled: boolean): UserLocation {
+  const [state, setState] = useState<UserLocation>({ status: "off" });
+  useEffect(() => {
+    if (!enabled) {
+      setState({ status: "off" });
+      return;
+    }
+    let active = true;
+    setState({ status: "finding" });
+    void findUserLocation(deviceLocation).then((result) => {
+      if (active) setState(result);
+    });
+    return () => {
+      active = false;
+    };
+  }, [enabled]);
+  return state;
+}
 
 // Styled like the search filter buttons, so it can sit in the same row.
 export function NearMeToggle({

@@ -13,10 +13,9 @@ import {
   searchResults,
   type SearchCategory,
 } from "./searchResults";
-import { NearMeList, NearMeToggle } from "./NearMe";
+import { NearMeList, NearMeToggle, useUserLocation } from "./NearMe";
 import { placeToMarker, placesInCategories } from "./explore";
 import { NEARBY_RADIUS_METERS, nearbyPlaces } from "../places/nearby";
-import useUserLocation from "../places/useUserLocation";
 
 const NO_PINS: Marker[] = [];
 
