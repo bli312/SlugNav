@@ -42,6 +42,7 @@ function RootNavigator() {
         <Stack.Protected guard={Boolean(session)}>
           <Stack.Screen name="index" />
           <Stack.Screen name="classes" />
+          <Stack.Screen name="feedback-reports" />
         </Stack.Protected>
         <Stack.Protected guard={!session}>
           <Stack.Screen name="login" />

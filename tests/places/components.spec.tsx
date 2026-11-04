@@ -80,6 +80,16 @@ test("map selections can move, saving uses the latest pin, and the saved pin is 
     longitude: -122,
   });
   expect(await screen.findByText("Place added.")).toBeOnTheScreen();
+  await user.press(screen.getByRole("button", { name: "Feedback & Votes" }));
+  expect(
+    screen.getByRole("button", { name: "Close feedback modal" }),
+  ).toBeOnTheScreen();
+  await user.press(
+    screen.getByRole("button", { name: "Close feedback modal" }),
+  );
+  expect(
+    screen.queryByRole("button", { name: "Close feedback modal" }),
+  ).not.toBeOnTheScreen();
   expect(screen.getByTestId("map").props.source.html).toContain(
     "L.marker([37, -122])",
   );

@@ -98,6 +98,18 @@ test("home search uses database results, filters categories and opens the select
   await user.press(
     screen.getByRole("button", { name: "Sample Room Classroom" }),
   );
+  await user.press(
+    screen.getByRole("button", { name: "Feedback & Votes for Sample Room" }),
+  );
+  expect(
+    screen.getByRole("button", { name: "Close feedback modal" }),
+  ).toBeOnTheScreen();
+  await user.press(
+    screen.getByRole("button", { name: "Close feedback modal" }),
+  );
+  expect(
+    screen.queryByRole("button", { name: "Close feedback modal" }),
+  ).not.toBeOnTheScreen();
   const html = screen.getByTestId("map").props.source.html;
   expect(html).toContain("L.marker([37, -122])");
   expect(html).toContain("Sample Room");

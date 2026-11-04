@@ -137,6 +137,12 @@ target. Changes with no added or modified measured source lines pass the check.
   [`20261103000000_places.sql`](supabase/migrations/20261103000000_places.sql)
   once in Supabase SQL Editor. On the home map, choose **Add place**, tap a
   location, enter its name/type, and save.
+- Place voting, comments, and reports require applying
+  [`20261104000000_place_feedback.sql`](supabase/migrations/20261104000000_place_feedback.sql)
+  once in Supabase SQL Editor. Students can vote on predefined options by place
+  type, like locations, leave comments, and submit reports for review. In the top
+  navigation bar, **Feedback and Report** allows students to view and manage their
+  submitted comments, votes/likes, and reports.
 - Home search reads classes and places from Supabase. Select the categories to
   include and type to search; an empty search shows no results. Tap a
   place to show its map pin. Classes show their saved meeting/location text;
