@@ -1,58 +1,16 @@
 import React from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text } from "react-native";
 
 import { NEARBY_RADIUS_METERS, type NearbyPlace } from "../places/nearby";
 import { placeTypes, type Place } from "../places/places";
+import type { UserLocation } from "../places/useUserLocation";
 import { formatDistance } from "./explore";
 
-type Props = {
-  showAll: boolean;
-  onShowAllChange: (showAll: boolean) => void;
-  showNearby: boolean;
-  onShowNearbyChange: (showNearby: boolean) => void;
-  // null until the map reports where it is centered.
-  nearby: Array<NearbyPlace> | null;
-  showNearbyList: boolean;
-  onSelect: (place: Place) => void;
-};
-
-// "Show all on map" and "Nearby" toggles, plus the list of nearby places.
-export default function ExploreOptions({
-  showAll,
-  onShowAllChange,
-  showNearby,
-  onShowNearbyChange,
-  nearby,
-  showNearbyList,
-  onSelect,
-}: Props) {
-  return (
-    <View>
-      <View style={styles.toggles}>
-        <Toggle
-          label="Show all on map"
-          checked={showAll}
-          onChange={onShowAllChange}
-        />
-        <Toggle
-          label="Nearby"
-          checked={showNearby}
-          onChange={onShowNearbyChange}
-        />
-      </View>
-      {showNearby && showNearbyList && (
-        <NearbyList nearby={nearby} onSelect={onSelect} />
-      )}
-    </View>
-  );
-}
-
-function Toggle({
-  label,
+// Styled like the search filter buttons, so it can sit in the same row.
+export function NearMeToggle({
   checked,
   onChange,
 }: {
-  label: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
 }) {
@@ -63,20 +21,40 @@ function Toggle({
       onPress={() => onChange(!checked)}
       style={[styles.toggle, checked && styles.toggleOn]}
     >
-      <Text style={{ color: checked ? "#fff" : "#1D2E24" }}>{label}</Text>
+      <Text style={{ color: checked ? "#fff" : "#1D2E24" }}>Near me</Text>
     </Pressable>
   );
 }
 
-function NearbyList({
+const messages = {
+  finding: "Finding your location…",
+  denied:
+    "Location is off for SlugNav. Turn it on to see places near you, or move the map to explore.",
+  error: "Couldn't get your location. Turn Near me off and on to try again.",
+};
+
+// Places within NEARBY_RADIUS_METERS of the user, closest first.
+export function NearMeList({
+  userLocation,
   nearby,
   onSelect,
 }: {
-  nearby: Array<NearbyPlace> | null;
+  userLocation: UserLocation;
+  nearby: Array<NearbyPlace>;
   onSelect: (place: Place) => void;
 }) {
-  if (!nearby) {
-    return <Text style={styles.detail}>Finding the map center…</Text>;
+  if (userLocation.status === "off") return null;
+  if (userLocation.status !== "found") {
+    return (
+      <Text
+        accessibilityRole={
+          userLocation.status === "finding" ? undefined : "alert"
+        }
+        style={styles.message}
+      >
+        {messages[userLocation.status]}
+      </Text>
+    );
   }
   return (
     <FlatList
@@ -85,12 +63,12 @@ function NearbyList({
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={
         <Text style={styles.heading}>
-          Within {NEARBY_RADIUS_METERS} m of the map center
+          Within {NEARBY_RADIUS_METERS} m of you
         </Text>
       }
       ListEmptyComponent={
         <Text style={styles.detail}>
-          No places within {NEARBY_RADIUS_METERS} m of the map center.
+          No places within {NEARBY_RADIUS_METERS} m of you.
         </Text>
       }
       renderItem={({ item }) => (
@@ -111,13 +89,6 @@ function NearbyList({
 }
 
 const styles = StyleSheet.create({
-  toggles: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingBottom: 8,
-  },
   toggle: {
     borderWidth: 1,
     borderColor: "#ABB7AE",
@@ -134,6 +105,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F6F8F5",
   },
   heading: { fontSize: 13, fontWeight: "600", color: "#526259", paddingTop: 6 },
+  message: { color: "#526259", paddingHorizontal: 12, paddingBottom: 8 },
   item: {
     paddingVertical: 8,
     borderBottomWidth: 1,
@@ -141,5 +113,5 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   title: { fontSize: 15, fontWeight: "600", color: "#1D2E24" },
-  detail: { fontSize: 14, color: "#526259", paddingHorizontal: 12 },
+  detail: { fontSize: 14, color: "#526259" },
 });

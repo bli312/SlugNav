@@ -13,10 +13,12 @@ import {
   searchResults,
   type SearchCategory,
 } from "./searchResults";
-import ExploreOptions from "./ExploreOptions";
+import { NearMeList, NearMeToggle } from "./NearMe";
 import { placeToMarker, placesInCategories } from "./explore";
-import type { MapLocation } from "../leaflet/mapLocation";
 import { NEARBY_RADIUS_METERS, nearbyPlaces } from "../places/nearby";
+import useUserLocation from "../places/useUserLocation";
+
+const NO_PINS: Marker[] = [];
 
 export default function CampusSearch() {
   const { classes, places, loading, error, addPlace } = useCampusSearch();
@@ -26,21 +28,22 @@ export default function CampusSearch() {
   );
   const [markers, setMarkers] = useState<Marker[]>([]);
   const results = searchResults(classes, places, search, categories);
-  const [showAll, setShowAll] = useState(false);
-  const [showNearby, setShowNearby] = useState(false);
-  const [center, setCenter] = useState<MapLocation | null>(null);
-  // Memoized so the map only reloads when the browse pins actually change.
-  const browseMarkers = React.useMemo(
-    () => placesInCategories(places, categories).map(placeToMarker),
+  const [nearMe, setNearMe] = useState(false);
+  const userLocation = useUserLocation(nearMe);
+  // Every place of the selected types is pinned on the map. Memoized so the
+  // pins are only resent when places or filters change.
+  const shownPlaces = React.useMemo(
+    () => placesInCategories(places, categories),
     [places, categories],
   );
-  const nearby = center
-    ? nearbyPlaces(
-        placesInCategories(places, categories),
-        center,
-        NEARBY_RADIUS_METERS,
-      )
-    : null;
+  const pins = React.useMemo(
+    () => shownPlaces.map(placeToMarker),
+    [shownPlaces],
+  );
+  const nearby =
+    userLocation.status === "found"
+      ? nearbyPlaces(shownPlaces, userLocation.location, NEARBY_RADIUS_METERS)
+      : [];
 
   function select(place: Place) {
     Keyboard.dismiss();
@@ -56,10 +59,10 @@ export default function CampusSearch() {
 
   return (
     <PlaceMap
-      // A selected result takes over the map; otherwise browse pins if on.
-      markers={markers.length > 0 || !showAll ? markers : browseMarkers}
+      markers={markers}
+      // A selected result takes over the map; otherwise show the filter pins.
+      pins={markers.length > 0 ? NO_PINS : pins}
       onPlaceAdded={addPlace}
-      onCenterChange={setCenter}
     >
       <View style={styles.controls}>
         <Searchbar
@@ -76,20 +79,17 @@ export default function CampusSearch() {
             setCategories(value);
             setMarkers([]);
           }}
-        />
+        >
+          <NearMeToggle checked={nearMe} onChange={setNearMe} />
+        </SearchFilters>
       </View>
-      <ExploreOptions
-        showAll={showAll}
-        onShowAllChange={(value) => {
-          setShowAll(value);
-          setMarkers([]);
-        }}
-        showNearby={showNearby}
-        onShowNearbyChange={setShowNearby}
-        nearby={nearby}
-        showNearbyList={!search.trim() && !loading && !error}
-        onSelect={select}
-      />
+      {!search.trim() && !loading && !error && (
+        <NearMeList
+          userLocation={userLocation}
+          nearby={nearby}
+          onSelect={select}
+        />
+      )}
       {Boolean(search.trim()) &&
         (loading ? (
           <Text style={styles.message}>Loading search results…</Text>

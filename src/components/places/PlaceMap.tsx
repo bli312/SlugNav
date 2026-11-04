@@ -15,15 +15,16 @@ import { placeTypes, type Place } from "./places";
 
 type Props = {
   markers: Marker[];
+  // Pins updated in place, without reloading the map; see LeafletDisplay.
+  pins?: Marker[];
   onPlaceAdded?: (place: Place) => void;
-  onCenterChange?: (center: MapLocation) => void;
   children?: React.ReactNode;
 };
 
 export default function PlaceMap({
   markers,
+  pins,
   onPlaceAdded,
-  onCenterChange,
   children,
 }: Props) {
   const [adding, setAdding] = useState(false);
@@ -60,7 +61,7 @@ export default function PlaceMap({
       <LeafletDisplay
         markers={savedMarkers ?? markers}
         onLocationSelect={adding ? setLocation : undefined}
-        onCenterChange={onCenterChange}
+        pins={pins}
       />
       {adding ? (
         <AddPlaceForm

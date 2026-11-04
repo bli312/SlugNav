@@ -13,23 +13,14 @@ export function isMapLocation(value: unknown): value is MapLocation {
   );
 }
 
-// Reads a location message sent by the map page, such as a tapped spot
-// ("place-location") or the map's center ("map-center").
-export function readLocationMessage(
-  data: string,
-  type: string,
-): MapLocation | null {
+export function readMapLocation(data: string): MapLocation | null {
   try {
     const message = JSON.parse(data);
-    if (message?.type === type && isMapLocation(message)) {
+    if (message?.type === "place-location" && isMapLocation(message)) {
       return { latitude: message.latitude, longitude: message.longitude };
     }
   } catch {
-    // Messages that aren't JSON are not map locations.
+    // Other WebView messages are not map selections.
   }
   return null;
-}
-
-export function readMapLocation(data: string): MapLocation | null {
-  return readLocationMessage(data, "place-location");
 }

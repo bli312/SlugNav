@@ -5,9 +5,11 @@ import { searchCategories, type SearchCategory } from "./searchResults";
 type Props = {
   selected: SearchCategory[];
   onChange: (categories: SearchCategory[]) => void;
+  // Extra buttons shown at the end of the same row, such as "Near me".
+  children?: React.ReactNode;
 };
 
-export default function SearchFilters({ selected, onChange }: Props) {
+export default function SearchFilters({ selected, onChange, children }: Props) {
   return (
     <View style={styles.filters}>
       {(Object.keys(searchCategories) as SearchCategory[]).map((category) => {
@@ -32,6 +34,7 @@ export default function SearchFilters({ selected, onChange }: Props) {
           </Pressable>
         );
       })}
+      {children}
     </View>
   );
 }

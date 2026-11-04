@@ -1,13 +1,13 @@
 import React from "react";
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import {
-  fireEvent,
   render,
   screen,
   userEvent,
   waitFor,
 } from "@testing-library/react-native";
 import type { WebViewProps } from "react-native-webview";
+import * as Location from "expo-location";
 import CampusSearch from "../../src/components/search/CampusSearch";
 import * as placesApi from "../../src/components/places/places";
 import * as classesApi from "../../src/components/classes/class_list/GetClasses";
@@ -28,6 +28,13 @@ jest.mock("../../src/components/places/places", () => ({
   getPlaces: jest.fn(),
   createPlace: jest.fn(),
 }));
+jest.mock("expo-location", () => ({
+  requestForegroundPermissionsAsync: jest.fn(),
+  getCurrentPositionAsync: jest.fn(),
+  Accuracy: { Balanced: 3 },
+}));
+// Records the JavaScript the app sends to the map, such as new pins.
+const mockInjected: string[] = [];
 jest.mock("react-native-webview", () => {
   const { forwardRef, useImperativeHandle } =
     jest.requireActual<typeof import("react")>("react");
@@ -35,7 +42,9 @@ jest.mock("react-native-webview", () => {
     jest.requireActual<typeof import("react-native")>("react-native");
   return {
     WebView: forwardRef((props: WebViewProps, ref) => {
-      useImperativeHandle(ref, () => ({ injectJavaScript: jest.fn() }));
+      useImperativeHandle(ref, () => ({
+        injectJavaScript: (script: string) => mockInjected.push(script),
+      }));
       return <View testID="map" {...props} />;
     }),
   };
@@ -65,8 +74,19 @@ const farBathroom: placesApi.Place = {
   longitude: -122,
 };
 
+const location = jest.mocked(Location);
+const allowLocation = (latitude: number, longitude: number) => {
+  location.requestForegroundPermissionsAsync.mockResolvedValue({
+    granted: true,
+  } as Location.LocationPermissionResponse);
+  location.getCurrentPositionAsync.mockResolvedValue({
+    coords: { latitude, longitude },
+  } as Location.LocationObject);
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
+  mockInjected.length = 0;
   jest
     .mocked(placesApi)
     .getPlaces.mockResolvedValue([fountain, farBathroom, room]);
@@ -74,44 +94,42 @@ beforeEach(() => {
 });
 
 const mapHTML = (): string => screen.getByTestId("map").props.source.html;
-const centerMapAt = (latitude: number, longitude: number) =>
-  fireEvent(screen.getByTestId("map"), "message", {
-    nativeEvent: {
-      data: JSON.stringify({ type: "map-center", latitude, longitude }),
-    },
-  });
+// The popups of the pins most recently sent to the map.
+const pinPopups = (): string[] => {
+  const prefix = "window.setPins?.(";
+  const script = mockInjected.filter((item) => item.startsWith(prefix)).at(-1);
+  if (!script) return [];
+  return JSON.parse(script.slice(prefix.length, -"); true;".length)).map(
+    (pin: { popup: string }) => pin.popup,
+  );
+};
 
-test("no place pins show before searching while Show all is off", async () => {
+test("pins for every selected place type show without searching", async () => {
   await render(<CampusSearch />);
-  await waitFor(() => expect(placesApi.getPlaces).toHaveBeenCalled());
-  expect(
-    screen.getByRole("checkbox", { name: "Show all on map" }),
-  ).not.toBeChecked();
-  // Real pins look like L.marker([lat, lng]); the place picker script
-  // always contains L.marker(point, ...), so match the bracket.
-  expect(mapHTML()).not.toContain("L.marker([");
+  await waitFor(() => expect(pinPopups()).toHaveLength(3));
+  const popups = pinPopups().join("\n");
+  expect(popups).toContain("Sample Room");
+  expect(popups).toContain("Sample Fountain");
+  expect(popups).toContain("Far Bathroom");
 });
 
-test("Show all puts every selected place on the map and follows the filters", async () => {
+test("turning off a type removes its pins without rebuilding the map", async () => {
   const user = userEvent.setup();
   await render(<CampusSearch />);
-  await user.press(screen.getByRole("checkbox", { name: "Show all on map" }));
-  await waitFor(() => expect(mapHTML()).toContain("Sample Fountain"));
-  expect(mapHTML()).toContain("Sample Room");
-  expect(mapHTML()).toContain("Far Bathroom");
+  await waitFor(() => expect(pinPopups()).toHaveLength(3));
+  const htmlBefore = mapHTML();
   await user.press(screen.getByRole("checkbox", { name: "Water fountains" }));
-  expect(mapHTML()).not.toContain("Sample Fountain");
-  expect(mapHTML()).toContain("Sample Room");
+  expect(pinPopups()).toHaveLength(2);
+  expect(pinPopups().join("\n")).not.toContain("Sample Fountain");
+  expect(mapHTML()).toBe(htmlBefore);
 });
 
-test("Nearby lists places near the map center, closest first, with distances", async () => {
+test("Near me lists places within 300 m of you, closest first", async () => {
   const user = userEvent.setup();
+  allowLocation(37, -122);
   await render(<CampusSearch />);
-  await user.press(screen.getByRole("checkbox", { name: "Nearby" }));
-  await centerMapAt(37, -122);
-  expect(
-    await screen.findByText("Within 300 m of the map center"),
-  ).toBeOnTheScreen();
+  await user.press(screen.getByRole("checkbox", { name: "Near me" }));
+  expect(await screen.findByText("Within 300 m of you")).toBeOnTheScreen();
   const distances = screen
     .getAllByText(/ · \d+ m$/)
     .map((item) => item.props.children.join(""));
@@ -119,39 +137,50 @@ test("Nearby lists places near the map center, closest first, with distances", a
   expect(screen.queryByText("Far Bathroom")).not.toBeOnTheScreen();
 });
 
-test("Nearby says so when nothing is within range", async () => {
+test("Near me says so when nothing is within 300 m", async () => {
   const user = userEvent.setup();
+  allowLocation(38, -122);
   await render(<CampusSearch />);
-  await user.press(screen.getByRole("checkbox", { name: "Nearby" }));
-  await centerMapAt(38, -122);
+  await user.press(screen.getByRole("checkbox", { name: "Near me" }));
   expect(
-    await screen.findByText("No places within 300 m of the map center."),
+    await screen.findByText("No places within 300 m of you."),
   ).toBeOnTheScreen();
+});
+
+test("Near me explains when location permission is denied", async () => {
+  const user = userEvent.setup();
+  location.requestForegroundPermissionsAsync.mockResolvedValue({
+    granted: false,
+  } as Location.LocationPermissionResponse);
+  await render(<CampusSearch />);
+  await user.press(screen.getByRole("checkbox", { name: "Near me" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    /^Location is off for SlugNav/,
+  );
+  expect(location.getCurrentPositionAsync).not.toHaveBeenCalled();
 });
 
 test("tapping a nearby place shows its pin on the map", async () => {
   const user = userEvent.setup();
+  allowLocation(37, -122);
   await render(<CampusSearch />);
-  await user.press(screen.getByRole("checkbox", { name: "Nearby" }));
-  await centerMapAt(37, -122);
+  await user.press(screen.getByRole("checkbox", { name: "Near me" }));
   await user.press(
     await screen.findByRole("button", { name: /^Sample Fountain/ }),
   );
   expect(mapHTML()).toContain("L.marker([37.0005, -122])");
   expect(mapHTML()).toContain(".openPopup()");
-  expect(mapHTML()).not.toContain("Sample Room");
+  expect(pinPopups()).toEqual([]);
 });
 
-test("typing a search hides the nearby list and shows search results", async () => {
+test("typing a search hides the Near me list and shows search results", async () => {
   const user = userEvent.setup();
+  allowLocation(37, -122);
   await render(<CampusSearch />);
-  await user.press(screen.getByRole("checkbox", { name: "Nearby" }));
-  await centerMapAt(37, -122);
-  await screen.findByText("Within 300 m of the map center");
+  await user.press(screen.getByRole("checkbox", { name: "Near me" }));
+  await screen.findByText("Within 300 m of you");
   await user.type(screen.getByLabelText("Search classes and places"), "Far");
-  expect(
-    screen.queryByText("Within 300 m of the map center"),
-  ).not.toBeOnTheScreen();
+  expect(screen.queryByText("Within 300 m of you")).not.toBeOnTheScreen();
   expect(
     screen.getByRole("button", { name: "Far Bathroom Bathroom" }),
   ).toBeOnTheScreen();

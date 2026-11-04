@@ -4,18 +4,19 @@ import { WebView } from "react-native-webview";
 import Marker from "./LeafletMarker";
 import LeafletMap from "./LeafletMap";
 import { readMapLocation, type MapLocation } from "./mapLocation";
-import { readMapCenter } from "./mapCenter";
+import { toPins } from "./pinLayer";
 
 interface LeafletDisplayProps {
   markers: Array<Marker>;
+  // Pins swapped into the loaded map without reloading it (unlike `markers`).
+  pins?: Array<Marker>;
   onLocationSelect?: (location: MapLocation) => void;
-  onCenterChange?: (center: MapLocation) => void;
 }
 
 export default function LeafletDisplay({
   markers,
+  pins,
   onLocationSelect,
-  onCenterChange,
 }: LeafletDisplayProps) {
   const webView = useRef<WebView<object>>(null);
   const frame = useRef<HTMLIFrameElement>(null);
@@ -24,10 +25,8 @@ export default function LeafletDisplay({
     (data: string) => {
       const location = readMapLocation(data);
       if (location) onLocationSelect?.(location);
-      const center = readMapCenter(data);
-      if (center) onCenterChange?.(center);
     },
-    [onLocationSelect, onCenterChange],
+    [onLocationSelect],
   );
   const updatePicker = useCallback(() => {
     if (Platform.OS === "web") {
@@ -42,6 +41,26 @@ export default function LeafletDisplay({
     }
   }, [picking]);
   useEffect(updatePicker, [updatePicker]);
+  const sendPins = useCallback(() => {
+    if (!pins) return;
+    const data = toPins(pins);
+    if (Platform.OS === "web") {
+      frame.current?.contentWindow?.postMessage(
+        { type: "set-pins", pins: data },
+        window.location.origin,
+      );
+    } else {
+      webView.current?.injectJavaScript(
+        `window.setPins?.(${JSON.stringify(data)}); true;`,
+      );
+    }
+  }, [pins]);
+  useEffect(sendPins, [sendPins]);
+  // Messages sent before the page loads are lost, so resend on load.
+  const syncMap = () => {
+    updatePicker();
+    sendPins();
+  };
   useEffect(() => {
     if (Platform.OS !== "web") return;
     const onMessage = (event: MessageEvent) => {
@@ -66,7 +85,7 @@ export default function LeafletDisplay({
     return (
       <iframe
         ref={frame}
-        onLoad={updatePicker}
+        onLoad={syncMap}
         title="UCSC Campus Map"
         sandbox="allow-scripts allow-same-origin"
         srcDoc={mapHTML}
@@ -78,7 +97,7 @@ export default function LeafletDisplay({
   return (
     <WebView
       ref={webView}
-      onLoadEnd={updatePicker}
+      onLoadEnd={syncMap}
       onMessage={(event) => receive(event.nativeEvent.data)}
       originWhitelist={["*"]}
       source={{ html: mapHTML }}
