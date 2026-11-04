@@ -37,6 +37,13 @@ export default function AddPlaceForm({ location, onSaved, onCancel }: Props) {
 
   return (
     <View style={styles.form}>
+      <View style={styles.noticeBubble}>
+        <Text style={styles.noticeIcon}>ℹ️</Text>
+        <Text style={styles.noticeText}>
+          Creation is for all UCSC users.
+        </Text>
+      </View>
+
       <Text>
         {location
           ? "Location selected. Tap the map to move the pin."
@@ -76,6 +83,25 @@ export default function AddPlaceForm({ location, onSaved, onCancel }: Props) {
 
 const styles = StyleSheet.create({
   form: { padding: 12, gap: 8, backgroundColor: "#F6F8F5" },
+  noticeBubble: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E8F0EA",
+    borderWidth: 1,
+    borderColor: "#B8D5C0",
+    borderRadius: 8,
+    padding: 10,
+    gap: 8,
+  },
+  noticeIcon: {
+    fontSize: 16,
+  },
+  noticeText: {
+    color: "#174B35",
+    fontSize: 13,
+    fontWeight: "500",
+    flex: 1,
+  },
   input: {
     borderWidth: 1,
     borderColor: "#ABB7AE",
