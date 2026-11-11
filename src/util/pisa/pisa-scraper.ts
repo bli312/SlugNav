@@ -16,8 +16,9 @@ import { ENDPOINT } from "@/components/classes/pisa/PisaElements";
 import getCurrentTerm from "@/components/classes/pisa/CurrentTerm";
 import scrapeClass from "@/components/classes/pisa/ScrapePisaClass";
 import { savePisaClasses } from "@/components/classes/pisa/SavePisaClasses";
-import { getSupabase } from "./backend-supabase";
+import { getSupabase } from "../../lib/backend-supabase";
 
+const PORT = 3000;
 const DEFAULT_TERM = 2268;
 
 const app = express();
@@ -88,6 +89,7 @@ app.get("/api/classes", async (req, res) => {
   }
 });
 
-app.listen(3000, "127.0.0.1", () =>
-  console.log("[SYSTEM] Proxy server running on port 3000"),
-);
+app.listen(PORT, "127.0.0.1", async () => {
+  await open(`http://localhost:3000/api/classes`);
+  console.log(`[SYSTEM] Proxy server running on port ${PORT}`);
+});

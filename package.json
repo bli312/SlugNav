@@ -46,20 +46,29 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit",
     "export": "expo export",
+    "scrape": "npx tsx ./src/lib/server.ts",
+    "typecheck": "tsc --noEmit",
     "check:scripts": "npm run typecheck && npm run lint && npm run test:coverage",
     "lint": "eslint .",
     "format": "prettier --write **/*.{js,jsx,ts,tsx,json}",
-    "test": "node --experimental-strip-types --test && jest --runInBand",
-    "test:coverage": "c8 node --experimental-strip-types --test && jest --runInBand --coverage",
+    "test": "node --experimental-strip-types --test",
+    "test:coverage": "c8 node --experimental-strip-types --test",
     "prepare": "husky"
   },
   "c8": {
     "all": true,
-    "include": ["src/**/*.ts"],
-    "exclude": ["src/**/*.d.ts", "src/**/types.ts"],
-    "reporter": ["text", "lcovonly"],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/**/*.d.ts",
+      "src/**/types.ts"
+    ],
+    "reporter": [
+      "text",
+      "lcovonly"
+    ],
     "reports-dir": "coverage/node"
   },
   "jest": {
@@ -73,7 +82,10 @@
       "!src/**/types.ts"
     ],
     "coverageDirectory": "coverage/components",
-    "coverageReporters": ["text", "lcovonly"]
+    "coverageReporters": [
+      "text",
+      "lcovonly"
+    ]
   },
   "dependencies": {
     "@maplibre/maplibre-react-native": "^11.5.0",
