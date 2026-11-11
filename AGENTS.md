@@ -34,6 +34,14 @@ can understand and maintain.
 - Keep local environment files, credentials, dependencies, and generated output
   out of commits. Review the files being included rather than staging everything.
 
+## Database and migrations
+
+- Write reversible database changes: every new migration in `supabase/migrations/<timestamp>_<name>.sql`
+  must have a corresponding rollback script in `supabase/rollbacks/<timestamp>_<name>.rollback.sql`.
+- Never put rollback scripts directly inside `supabase/migrations/`, as Supabase CLI executes all `.sql`
+  files in that directory forward during resets and pushes.
+- Wrap migration and rollback scripts in transactions (`begin; ... commit;`) when supported.
+
 ## Privacy and data security
 
 - Enforce database security with Supabase Row-Level Security (RLS) on all tables;
