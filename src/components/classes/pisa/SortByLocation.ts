@@ -6,7 +6,7 @@ export const UNKNOWN = "Unknown Location";
 const sortByLocation = (classes: PisaClass[]) => {
   const groupedClasses = classes.reduce(
     (acc, classItem) => {
-      const location = classItem.meetingInfo.location || "Unknown Location";
+      const location = classItem.meetingInfo.location || UNKNOWN;
       const parsed = parsePisaLocations(location);
       if (!acc[parsed.place]) {
         acc[parsed.place] = [];

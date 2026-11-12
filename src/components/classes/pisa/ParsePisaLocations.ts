@@ -1,9 +1,9 @@
-export interface Location {
+interface ParsedLocation {
   type: string;
   place: string;
 }
 
-export default function parsePisaLocations(location: string): Location {
+export default function parsePisaLocations(location: string): ParsedLocation {
   if (location == "Unknown Location") {
     return {
       type: "Unknown",

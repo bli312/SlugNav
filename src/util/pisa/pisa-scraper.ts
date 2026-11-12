@@ -1,9 +1,9 @@
-// ================================================================ //
-// =                                                              = //
-// =      IMPORTANT - run with `npx tsx ./src/lib/server.ts`      = //
-// =    GO TO http://localhost:3000/api/classes TO SEE RESULTS    = //
-// =                                                              = //
-// ================================================================ //
+// ====================================================================== //
+// =                                                                    = //
+// =   IMPORTANT - run with `npx tsx ./src/util/pisa/pisa-scraper.ts`   = //
+// =       GO TO http://localhost:3000/api/classes TO SEE RESULTS       = //
+// =                                                                    = //
+// ====================================================================== //
 
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
