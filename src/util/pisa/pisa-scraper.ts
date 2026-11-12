@@ -11,11 +11,14 @@ dotenv.config({ path: ".env.local" });
 import axios from "axios";
 import * as cheerio from "cheerio";
 import express from "express";
+import open from "open";
 
-import { ENDPOINT } from "@/components/classes/pisa/PisaElements";
 import getCurrentTerm from "@/components/classes/pisa/CurrentTerm";
-import scrapeClass from "@/components/classes/pisa/ScrapePisaClass";
 import { savePisaClasses } from "@/components/classes/pisa/SavePisaClasses";
+import scrapeClass from "@/components/classes/pisa/ScrapePisaClass";
+import sortByLocation from "@/components/classes/pisa/SortByLocation";
+import { ENDPOINT } from "@/components/classes/pisa/PisaElements";
+
 import { getSupabase } from "../../lib/backend-supabase";
 
 const PORT = 3000;
@@ -59,6 +62,7 @@ app.get("/api/classes", async (req, res) => {
     const classes = $(".panel.panel-default.row")
       .map((_, element) => scrapeClass($, element))
       .toArray();
+    const classesByLocation = sortByLocation(classes);
 
     const { formattedClasses, data, error } = await savePisaClasses(
       getSupabase(),
@@ -79,6 +83,7 @@ app.get("/api/classes", async (req, res) => {
     return res.json({
       classes: classes,
       formattedClasses: formattedClasses,
+      classesByLocation: classesByLocation,
       data: data,
     });
   } catch (error) {
