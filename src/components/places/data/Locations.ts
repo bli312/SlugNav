@@ -5,7 +5,7 @@ import {
 } from "./BuildingLocations";
 import Rooms, { Room } from "./RoomLocations";
 
-interface Location {
+export interface Location {
   name: string;
   pisaName: string;
   building: Building | undefined;
@@ -369,12 +369,6 @@ const Locations: Location[] = [
     BuildingName.Engineering2,
     "585",
   ),
-  createLocation(
-    "Engineering 2 Room 585",
-    "Engineer 2 585",
-    BuildingName.Engineering2,
-    "585",
-  ),
   createLocation("Harbor", "Harbor", BuildingName.Harbor),
   createLocation(
     "Humanities and Social Sciences Room 250",
@@ -693,12 +687,6 @@ const Locations: Location[] = [
     "101",
   ),
   createLocation(
-    "Music Center Room 101",
-    "Music Center 101",
-    BuildingName.Music,
-    "101",
-  ),
-  createLocation(
     "Music Center Room 114",
     "Music Center 114",
     BuildingName.Music,
@@ -811,12 +799,6 @@ const Locations: Location[] = [
     "Oakes Acad 222",
     BuildingName.OakesAcad,
     "222",
-  ),
-  createLocation(
-    "Ocean Health Building Room 118",
-    "Ocean Health 118",
-    BuildingName.OakesAcad,
-    "118",
   ),
   createLocation(
     "Ocean Health Building Room 118",
