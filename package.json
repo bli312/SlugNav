@@ -57,7 +57,7 @@
   },
   "c8": {
     "all": true,
-    "include": ["src/**/*.ts"],
+    "include": ["src/**/*.ts", "supabase/functions/**/handler.ts"],
     "exclude": ["src/**/*.d.ts", "src/**/types.ts"],
     "reporter": ["text", "lcovonly"],
     "reports-dir": "coverage/node"
@@ -65,6 +65,7 @@
   "jest": {
     "preset": "jest-expo",
     "testMatch": [
+      "<rootDir>/tests/**/*.spec.ts",
       "<rootDir>/tests/**/*.spec.tsx"
     ],
     "collectCoverageFrom": [
