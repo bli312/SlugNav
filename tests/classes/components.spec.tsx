@@ -1,4 +1,3 @@
-/*
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import { render, screen, userEvent } from "@testing-library/react-native";
 
@@ -218,4 +217,3 @@ test("creating a manual class with only its name saves it in My schedule and lea
   await user.press(screen.getByRole("tab", { name: "My schedule" }));
   expect(screen.getByText("My own class")).toBeOnTheScreen();
 });
-*/

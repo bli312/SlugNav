@@ -2,6 +2,7 @@ import { getSupabase } from "@/lib/supabase";
 import Marker from "@/components/leaflet/LeafletMarker";
 import { createPopup } from "@/components/leaflet/LeafletPopup";
 import { useEffect, useState } from "react";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 const PAGE_SIZE = 500;
 export const NO_PINS: Marker[] = [];
@@ -14,7 +15,7 @@ export default function useCampusLocations() {
     const fetchLocations = async () => {
       setLocationsLoading(true);
       try {
-        const locations = await loadLocations();
+        const locations = await loadLocations(getSupabase());
         if (!isMounted) return;
         setMarkers(locations);
       } catch (error) {
@@ -37,8 +38,7 @@ export default function useCampusLocations() {
   return { markers, setMarkers, locationsLoading };
 }
 
-export async function loadLocations(): Promise<Marker[]> {
-  const client = getSupabase();
+export async function loadLocations(client: SupabaseClient): Promise<Marker[]> {
   const markers: Marker[] = [];
   let from = 0;
 
