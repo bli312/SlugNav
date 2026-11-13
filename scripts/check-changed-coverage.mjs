@@ -57,7 +57,7 @@ export function checkChangedCoverage(coverage, changes) {
   const changed = { covered: 0, total: 0 };
   for (const [file, numbers] of changes) {
     if (
-      !/^src\/.*\.tsx?$/.test(file) ||
+      !/^(src\/.*\.tsx?|supabase\/functions\/.*\/handler\.ts)$/.test(file) ||
       file.endsWith(".d.ts") ||
       file.endsWith("/types.ts")
     )
@@ -106,6 +106,7 @@ if (fileURLToPath(import.meta.url) === resolve(process.argv[1] ?? "")) {
       "HEAD",
       "--",
       "src",
+      "supabase/functions",
     ],
     { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 },
   );

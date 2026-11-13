@@ -12,7 +12,8 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx"
+    "src/**/*.tsx",
+    "supabase/functions/**/handler.ts"
   ],
   "exclude": [
     "**/*.md",

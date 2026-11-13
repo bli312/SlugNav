@@ -22,6 +22,10 @@ export default defineConfig([
       globals: globals.node,
     },
   },
+  {
+    files: ["supabase/functions/**/index.ts"],
+    languageOptions: { globals: { Deno: "readonly" } },
+  },
   [
     globalIgnores([
       "**/*.md",
