@@ -16,12 +16,13 @@ app.use(express.json());
 app.get("/api/classes", async (_, res) => {
   try {
     const { classes, currentTerm } = await scrapePisaClasses();
-    const { formattedClasses, classesByLocation, data } =
+    const { formattedClasses, classesByLocation, missingClasses, data } =
       await exportPisaClasses(classes, currentTerm);
     return res.json({
       classes,
       formattedClasses,
       classesByLocation,
+      missingClasses,
       data,
     });
   } catch (error: unknown) {

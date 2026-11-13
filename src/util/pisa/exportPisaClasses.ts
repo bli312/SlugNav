@@ -1,5 +1,6 @@
 import { savePisaClasses } from "@/components/classes/pisa/SavePisaClasses";
 import sortByLocation from "@/components/classes/pisa/SortByLocation";
+import sortMissingClasses from "@/components/classes/pisa/SortMissingClasses";
 
 import { getSupabase } from "../../lib/backend-supabase";
 
@@ -10,6 +11,7 @@ export async function exportPisaClasses(
   currentTerm: number,
 ) {
   const classesByLocation = sortByLocation(classes);
+  const missingClasses = sortMissingClasses(classes);
   const { formattedClasses, data, error } = await savePisaClasses(
     getSupabase(),
     classes,
@@ -23,6 +25,7 @@ export async function exportPisaClasses(
   return {
     formattedClasses,
     classesByLocation,
+    missingClasses,
     data,
   };
 }
