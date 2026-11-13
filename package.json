@@ -61,7 +61,8 @@
   "c8": {
     "all": true,
     "include": [
-      "src/**/*.ts"
+      "src/**/*.ts",
+      "supabase/functions/**/handler.ts"
     ],
     "exclude": [
       "src/**/*.d.ts",
@@ -76,6 +77,7 @@
   "jest": {
     "preset": "jest-expo",
     "testMatch": [
+      "<rootDir>/tests/**/*.spec.ts",
       "<rootDir>/tests/**/*.spec.tsx"
     ],
     "collectCoverageFrom": [

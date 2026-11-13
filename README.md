@@ -90,6 +90,22 @@ For a stable callback across devices, Expo recommends
 [development builds](https://docs.expo.dev/guides/authentication/). Installed
 SlugNav builds use the existing `slugnav://auth/callback` redirect.
 
+### Walking routes
+
+Call `getWalkingRoute(start, destination)` from `@/lib/walkingRoute`, passing
+`{ latitude, longitude }` for each location. It returns `geometry` (a GeoJSON
+LineString with longitude/latitude pairs), `distanceMeters`, `durationSeconds`,
+and `attribution`. Requires a signed-in user; display the attribution with routes.
+Coordinates are sent to Supabase and ORS.
+
+Add an [ORS API key](https://api.heigit.org/) as `ORS_API_KEY` under Supabase
+**Edge Functions → Secrets**, not in the app's `.env.local`.
+
+To deploy, use **Edge Functions → Deploy a new function → Via Editor** in
+the dashboard. Name it `walking-route`, copy `index.ts` and `handler.ts` from
+`supabase/functions/walking-route/` into matching files in the editor, and deploy.
+Keep JWT verification enabled. Keep the dashboard code in sync with this repository.
+
 ## Useful Terminal Commands
 
 | Command | Purpose |
@@ -115,7 +131,8 @@ and do not connect to the shared Supabase project.
 
 CI runs TypeScript, ESLint, and tests with coverage on PRs into `main` and pushes
 to `main`. Reports include untested `.ts` and `.tsx` source files, excluding
-type-only `types.ts` and declaration files.
+type-only `types.ts` and declaration files. Coverage also includes Edge Function
+`handler.ts` files.
 
 For PRs, at least **80% of added or modified measured source lines** must be
 covered by tests, combining both reports. Unchanged code is not subject to this

@@ -44,14 +44,17 @@ for (const [hits, expected] of [
   });
 }
 
-test("counts changed lines across TypeScript logic and React components", () => {
+test("counts changed lines across app code and Edge Function handlers", () => {
+  const handler = "supabase/functions/walking-route/handler.ts";
   const reports = new Map([
     ...coverage([0]),
-    ...coverage([1, 1, 1, 1], "src/screen.tsx"),
+    ...coverage([1, 1, 1], "src/screen.tsx"),
+    ...coverage([1], handler),
   ]);
   const changes = new Map([
     ...additions([1]),
-    ...additions([1, 2, 3, 4], "src/screen.tsx"),
+    ...additions([1, 2, 3], "src/screen.tsx"),
+    ...additions([1], handler),
   ]);
   assert.deepEqual(checkChangedCoverage(reports, changes), {
     covered: 4,
