@@ -72,4 +72,13 @@ GRANT SELECT, INSERT, UPDATE
 ON public.locations
 TO service_role;
 
+GRANT SELECT
+ON TABLE public.locations
+TO anon, authenticated;
+
+CREATE POLICY "Public can read campus locations"
+ON public.locations
+FOR SELECT
+TO anon, authenticated
+USING (true);
 $$;
