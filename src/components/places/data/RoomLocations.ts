@@ -61,6 +61,7 @@ const Rooms: Room[] = [
   // MISSING Cowell Academics Room 222
   // MISSING Cowell Academics Room 223
   // MISSING Cowell Classroom 131
+  // MISSING Cowell College 132
   // MISSING Cowell College 134
   // MISSING Cowell College 239
   // MISSING Cowell Press Room 123
@@ -86,20 +87,20 @@ const Rooms: Room[] = [
   // MISSING Earth and Marine Room D250
   // MISSING Earth and Marine Room D258
   // MISSING Earth and Marine Room D266
-  // MISSING Elena Baskin Arts Room E101
-  // MISSING Elena Baskin Arts Room E102
-  // MISSING Elena Baskin Arts Room G101
-  // MISSING Elena Baskin Arts Room H101
+  // MISSING Elena Baskin Arts Building E Room 101
+  // MISSING Elena Baskin Arts Building E Room 102
+  // MISSING Elena Baskin Arts Building G Room 101
+  // MISSING Elena Baskin Arts Building H Room 101
   createRoom(
-    findBuildingByName(BuildingName.ElenaBaskin),
-    "I200",
+    findBuildingByName(BuildingName.ElenaBaskinI),
+    "200",
     36.99460637441837,
     -122.0600543915645,
   ),
-  // MISSING Elena Baskin Arts Room J101
-  // MISSING Elena Baskin Arts Room L101
-  // MISSING Elena Baskin Arts Room M101
-  // MISSING Elena Baskin Arts Room P101
+  // MISSING Elena Baskin Arts Building J Room 101
+  // MISSING Elena Baskin Arts Building L Room 101
+  // MISSING Elena Baskin Arts Building M Room 101
+  // MISSING Elena Baskin Arts Building P Room 101
   createRoom(
     findBuildingByName(BuildingName.Engineering2),
     "192",
@@ -110,11 +111,13 @@ const Rooms: Room[] = [
   // MISSING Engineering 2 Room 499
   // MISSING Engineering 2 Room 585
   // MISSING Humanities and Social Sciences Room 250
+  // MISSING Humanities and Social Sciences Room 359
   // MISSING Humanities and Social Sciences Room 350
   // MISSING Humanities 1 Room 110
   // MISSING Humanities 1 Room 300
   // MISSING Humanities 1 Room 320
   // MISSING Humanities 1 Room 400
+  // MISSING Humanities 1 Room 420
   // MISSING Humanities 1 Room 545
   // MISSING Humanities 1 Room 620
   // MISSING Interdisciplinary Sciences Building Room 165
@@ -146,7 +149,7 @@ const Rooms: Room[] = [
   // MISSING McHenry Classroom 1279
   // MISSING McHenry Classroom 3148
   // MISSING McHenry Classroom 3170
-  // MISSING McHenry Classroom 4310
+  // MISSING McHenry Classroom 4130
   createRoom(
     findBuildingByName(BuildingName.McHenryLib),
     "1340",
@@ -198,8 +201,9 @@ const Rooms: Room[] = [
     36.99842900643725,
     -122.06105705284891,
   ),
-  // MISSING Natural Science Building 2 Room 229
-  // MISSING Natural Science Building 2 Room 233
+  // MISSING Natural Science Main Building 2 Room 110
+  // MISSING Natural Science Main Building 2 Room 229
+  // MISSING Natural Science Main Building 2 Room 233
   // MISSING Oakes Academics Room 101
   // MISSING Oakes Academics Room 102
   // MISSING Oakes Academics Room 103
@@ -294,6 +298,12 @@ const Rooms: Room[] = [
   // MISSING Rachel Carson Academics Room 240
   // MISSING Rachel Carson Academics Room 242
   // MISSING Rachel Carson Academics Room 301
+  createRoom(
+    findBuildingByName(BuildingName.SNELibrary),
+    "206",
+    36.99913155226583,
+    -122.06097620542073,
+  ),
   // MISSING Sinsheimer Lab 123
   createRoom(
     findBuildingByName(BuildingName.SocSci1),
@@ -438,6 +448,7 @@ const Rooms: Room[] = [
   // MISSING Theater Arts Offices J Room 102
   // MISSING Theater Arts Studio C Room 100
   // MISSING Theater Arts Studio C Room 102
+  // MISSING Thimann Lecture Hall Room 001
   // MISSING Thimann Lecture Hall Room 003
   // MISSING Thimann Laboratories Room 101
   // MISSING Thimann Laboratories Room 115
