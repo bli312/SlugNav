@@ -1,4 +1,8 @@
-import { Building, findBuildingByName } from "./BuildingLocations";
+import {
+  Building,
+  BuildingName,
+  findBuildingByName,
+} from "./BuildingLocations";
 
 export interface Room {
   building: Building | undefined;
@@ -24,7 +28,7 @@ function createRoom(
 // for locations not on google maps, refer to: https://maps.ucsc.edu/
 const Rooms: Room[] = [
   createRoom(
-    findBuildingByName("Athletics and Recreation East Field House Complex"),
+    findBuildingByName(BuildingName.AthleticsRecreation),
     "50 Meter Pool",
     36.994748928217845,
     -122.05406589788667,
@@ -32,13 +36,13 @@ const Rooms: Room[] = [
   // MISSING Biomedical Sciences Room 200
   // MISSING Biomedical Sciences Room 300
   createRoom(
-    findBuildingByName("Classroom Unit Building"),
+    findBuildingByName(BuildingName.ClassroomUnit),
     "001",
     36.99788618889238,
     -122.0570384904234,
   ),
   createRoom(
-    findBuildingByName("Classroom Unit Building"),
+    findBuildingByName(BuildingName.ClassroomUnit),
     "002",
     36.99793187439674,
     -122.05679914153552,
@@ -70,7 +74,7 @@ const Rooms: Room[] = [
   // MISSING Digital Arts Room 308
   // MISSING Earth and Marine Room A176
   createRoom(
-    findBuildingByName("Earth and Marine Sciences Building"),
+    findBuildingByName(BuildingName.EarthMarines),
     "B206",
     36.99793187439674,
     -122.05679914153552,
@@ -87,7 +91,7 @@ const Rooms: Room[] = [
   // MISSING Elena Baskin Arts Room G101
   // MISSING Elena Baskin Arts Room H101
   createRoom(
-    findBuildingByName("Elena Baskin Visual Arts Center"),
+    findBuildingByName(BuildingName.ElenaBaskin),
     "I200",
     36.99460637441837,
     -122.0600543915645,
@@ -97,7 +101,7 @@ const Rooms: Room[] = [
   // MISSING Elena Baskin Arts Room M101
   // MISSING Elena Baskin Arts Room P101
   createRoom(
-    findBuildingByName("Engineering 2"),
+    findBuildingByName(BuildingName.Engineering2),
     "192",
     37.00094020007238,
     -122.0626815988269,
@@ -144,19 +148,19 @@ const Rooms: Room[] = [
   // MISSING McHenry Classroom 3170
   // MISSING McHenry Classroom 4310
   createRoom(
-    findBuildingByName("McHenry Library"),
+    findBuildingByName(BuildingName.McHenryLib),
     "1340",
     36.99552795215951,
     -122.05898932492316,
   ),
   createRoom(
-    findBuildingByName("McHenry Library"),
+    findBuildingByName(BuildingName.McHenryLib),
     "1350",
     36.995464954671775,
     -122.05877941165137,
   ),
   createRoom(
-    findBuildingByName("Theater Arts M Media Theater"),
+    findBuildingByName(BuildingName.TheaterArtsM),
     "110",
     36.99522988511178,
     -122.06155531315096,
@@ -177,19 +181,19 @@ const Rooms: Room[] = [
   // MISSING Music Center Room 191A
   // MISSING Music Center Room 245
   createRoom(
-    findBuildingByName("Natural Science 2 Annex"),
+    findBuildingByName(BuildingName.NatSci2Annex),
     "101",
     36.99859732004918,
     -122.06111826256146,
   ),
   createRoom(
-    findBuildingByName("Natural Science 2 Annex"),
+    findBuildingByName(BuildingName.NatSci2Annex),
     "102",
     36.99844542030661,
     -122.0611078212978,
   ),
   createRoom(
-    findBuildingByName("Natural Science 2 Annex"),
+    findBuildingByName(BuildingName.NatSci2Annex),
     "103",
     36.99842900643725,
     -122.06105705284891,
@@ -200,7 +204,7 @@ const Rooms: Room[] = [
   // MISSING Oakes Academics Room 102
   // MISSING Oakes Academics Room 103
   createRoom(
-    findBuildingByName("Oakes Academic Building"),
+    findBuildingByName(BuildingName.OakesAcad),
     "105",
     36.989615982561574,
     -122.06272028517667,
@@ -211,37 +215,37 @@ const Rooms: Room[] = [
   // MISSING Ocean Health Building Room 151
   // MISSING Ocean Health Building Room 251
   createRoom(
-    findBuildingByName("Physical Sciences Building"),
+    findBuildingByName(BuildingName.PhysSci),
     "110",
     36.99937065610728,
     -122.06167735780055,
   ),
   createRoom(
-    findBuildingByName("Physical Sciences Building"),
+    findBuildingByName(BuildingName.PhysSci),
     "114",
     36.99937065610728,
     -122.0616947376665,
   ),
   createRoom(
-    findBuildingByName("Physical Sciences Building"),
+    findBuildingByName(BuildingName.PhysSci),
     "130",
     36.999460585884165,
     -122.06182782911551,
   ),
   createRoom(
-    findBuildingByName("Physical Sciences Building"),
+    findBuildingByName(BuildingName.PhysSci),
     "136",
     36.999466644721856,
     -122.06190938327425,
   ),
   createRoom(
-    findBuildingByName("Physical Sciences Building"),
+    findBuildingByName(BuildingName.PhysSci),
     "140",
     36.99945755646532,
     -122.06196722982858,
   ),
   createRoom(
-    findBuildingByName("Physical Sciences Building"),
+    findBuildingByName(BuildingName.PhysSci),
     "145",
     36.99947035289295,
     -122.06205450507179,
@@ -250,39 +254,39 @@ const Rooms: Room[] = [
   // MISSING Physical Sciences Room 341
   // MISSING Physical Sciences Room 450
   createRoom(
-    findBuildingByName("Porter Academic Building"),
+    findBuildingByName(BuildingName.PorterAcad),
     "144",
     36.99400301575259,
     -122.06536226173785,
   ),
   createRoom(
-    findBuildingByName("Porter Academic Building"),
+    findBuildingByName(BuildingName.PorterAcad),
     "148",
     36.99403273099864,
     -122.06526157902647,
   ),
   createRoom(
-    findBuildingByName("Porter Academic Building"),
+    findBuildingByName(BuildingName.PorterAcad),
     "241",
     36.99402955428894,
     -122.06540161092305,
   ),
   // MISSING Porter Academics Room 245
   createRoom(
-    findBuildingByName("Porter Academic Building"),
+    findBuildingByName(BuildingName.PorterAcad),
     "246",
     36.99402617903544,
     -122.0653853054804,
   ),
   // MISSING Porter Academics Room 249
   createRoom(
-    findBuildingByName("Rachel Carson Academic Building"),
+    findBuildingByName(BuildingName.RCAcad),
     "250",
     36.99210550621626,
     -122.06482713149423,
   ),
   createRoom(
-    findBuildingByName("Rachel Carson Academic Building"),
+    findBuildingByName(BuildingName.RCAcad),
     "252",
     36.99210890061941,
     -122.06492324811721,
@@ -292,31 +296,31 @@ const Rooms: Room[] = [
   // MISSING Rachel Carson Academics Room 301
   // MISSING Sinsheimer Lab 123
   createRoom(
-    findBuildingByName("Social Sciences 1 Building"),
+    findBuildingByName(BuildingName.SocSci1),
     "110",
     37.001979114171945,
     -122.05798830316414,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 1 Building"),
+    findBuildingByName(BuildingName.SocSci1),
     "145",
     37.002500985246684,
     -122.05801531961626,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 1 Building"),
+    findBuildingByName(BuildingName.SocSci1),
     "149",
     37.002433378660136,
     -122.05799470831629,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 1 Building"),
+    findBuildingByName(BuildingName.SocSci1),
     "153",
     37.00236756116708,
     -122.05799006521808,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 1 Building"),
+    findBuildingByName(BuildingName.SocSci1),
     "161",
     37.00228843754827,
     -122.0579651115743,
@@ -327,13 +331,13 @@ const Rooms: Room[] = [
   // MISSING Social Sciences 1 Room 461
   // MISSING Social Sciences 2 Room 047
   createRoom(
-    findBuildingByName("Social Sciences 2 Building"),
+    findBuildingByName(BuildingName.SocSci2),
     "071",
     37.00150271616585,
     -122.05884841585552,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 2 Building"),
+    findBuildingByName(BuildingName.SocSci2),
     "075",
     37.00157466289991,
     -122.05891195223238,
@@ -342,43 +346,43 @@ const Rooms: Room[] = [
   // MISSING Social Sciences 2 Room 115
   // MISSING Social Sciences 2 Room 121
   createRoom(
-    findBuildingByName("Social Sciences 2 Building"),
+    findBuildingByName(BuildingName.SocSci2),
     "137",
     37.0018541185183,
     -122.05880289725651,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 2 Building"),
+    findBuildingByName(BuildingName.SocSci2),
     "141",
     37.00181322263865,
     -122.05877729304493,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 2 Building"),
+    findBuildingByName(BuildingName.SocSci2),
     "159",
     37.00158753757379,
     -122.05861039151767,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 2 Building"),
+    findBuildingByName(BuildingName.SocSci2),
     "165",
     37.001557244225495,
     -122.058670134678,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 2 Building"),
+    findBuildingByName(BuildingName.SocSci2),
     "167",
     37.00151331884902,
     -122.05875927526642,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 2 Building"),
+    findBuildingByName(BuildingName.SocSci2),
     "171",
     37.00145651875564,
     -122.0588266048598,
   ),
   createRoom(
-    findBuildingByName("Social Sciences 2 Building"),
+    findBuildingByName(BuildingName.SocSci2),
     "179",
     37.001539068210725,
     -122.05888160649948,
@@ -386,7 +390,7 @@ const Rooms: Room[] = [
   // MISSING Social Sciences 2 Room 215
   // MISSING Social Sciences 2 Room 221
   createRoom(
-    findBuildingByName("Social Sciences 2 Building"),
+    findBuildingByName(BuildingName.SocSci2),
     "363",
     37.001482268136556,
     -122.05868910076066,
@@ -394,25 +398,25 @@ const Rooms: Room[] = [
   // MISSING Stevenson Academics Room 129
   // MISSING Stevenson Academics Room 131
   createRoom(
-    findBuildingByName("Stevenson Academic Building"),
+    findBuildingByName(BuildingName.StevensonAcad),
     "150",
     36.99716392241645,
     -122.05169890254543,
   ),
   createRoom(
-    findBuildingByName("Stevenson Academic Building"),
+    findBuildingByName(BuildingName.StevensonAcad),
     "151",
     36.99725093429767,
     -122.0517161984107,
   ),
   createRoom(
-    findBuildingByName("Stevenson Academic Building"),
+    findBuildingByName(BuildingName.StevensonAcad),
     "152",
     36.997319941753304,
     -122.05175839552227,
   ),
   createRoom(
-    findBuildingByName("Stevenson Academic Building"),
+    findBuildingByName(BuildingName.StevensonAcad),
     "175",
     36.99699175457352,
     -122.05168203884413,
@@ -420,7 +424,7 @@ const Rooms: Room[] = [
   // MISSING Stevenson Academics Room 213
   // MISSING Stevenson Fireside Lounge 177
   createRoom(
-    findBuildingByName("Theater Arts Center"),
+    findBuildingByName(BuildingName.TheaterArts),
     "2nd Stage",
     36.99464667628062,
     -122.06186322877802,
@@ -443,7 +447,7 @@ const Rooms: Room[] = [
   // MISSING Thimann Laboratories Room 239
   // MISSING Thimann Laboratories Room 397
   createRoom(
-    findBuildingByName("Theater Arts Center"),
+    findBuildingByName(BuildingName.TheaterArts),
     "2nd Stage",
     36.99221644365824,
     -122.06608863868685,
