@@ -102,6 +102,9 @@ SlugNav builds use the existing `slugnav://auth/callback` redirect.
 | `npm test` | Run unit, component, and database tests locally |
 | `npm run test:coverage` | Run tests with coverage reports in `coverage/` |
 | `npm run export` | Check production bundling for iOS, Android, and web |
+| `npm run scrape:local` | Scrapes class info off PISA UCSC and puts it onto your browser |
+| `npm run scrape:export` | Scrapes class info off PISA UCSC and puts it onto Supabase Database |
+| `npm run locations:export` | Grabs known locations and imports it into Supabase Database |
 | `npm run check:scripts` | Run TypeScript, ESLint, and tests with coverage |
 
 Bundling does not test native device behavior.
