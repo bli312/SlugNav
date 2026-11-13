@@ -1,3 +1,10 @@
+// ============================================================================ //
+// =                                                                          = //
+// =   IMPORTANT - run with `npx tsx ./src/util/pisa/pisa-scraper-export.ts`  = //
+// =          GO TO http://localhost:3000/api/classes TO SEE RESULTS          = //
+// =                                                                          = //
+// ============================================================================ //
+
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 

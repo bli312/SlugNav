@@ -2,6 +2,17 @@ import { PisaClass } from "./PisaElements";
 import parsePisaLocations from "./parse/ParsePisaLocations";
 import Locations from "@/components/places/data/Locations";
 
+export function locationsWithRooms(classes: PisaClass[]): number {
+  return classes.filter((pisaClass) => {
+    const { place } = parsePisaLocations(pisaClass.meetingInfo.location);
+    const location = Locations.find((location) =>
+      location.pisaName?.toLowerCase().includes(place.toLowerCase()),
+    );
+    if (!location) return false;
+    return !!location.building && !!location.room;
+  }).length;
+}
+
 const IGNORE_LIST: string[] = [
   "LEC",
   "DIS",
@@ -39,7 +50,8 @@ const sortMissingClasses = (classes: PisaClass[]) => {
       pisaClass.meetingInfo.location,
     ).place.toLowerCase();
     return IGNORE_LIST.find(
-      (ignoreItem) => place === ignoreItem.toLowerCase() || place === null,
+      (ignoreItem) =>
+        place === ignoreItem.toLowerCase() || place === null || !place.length,
     );
   });
   const missing = classes.filter(

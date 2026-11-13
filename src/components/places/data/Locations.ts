@@ -12,7 +12,7 @@ interface Location {
   room: Room | undefined;
 }
 
-function findLocation(
+export function findLocation(
   buildingName: BuildingName,
   roomName?: string,
 ): Pick<Location, "building" | "room"> {
