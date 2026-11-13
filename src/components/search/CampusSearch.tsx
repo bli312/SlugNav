@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
-import type Marker from "../leaflet/LeafletMarker";
 import { createPopup } from "../leaflet/LeafletPopup";
 import PlaceFeedbackModal from "../places/PlaceFeedbackModal";
 import PlaceMap from "../places/PlaceMap";
@@ -17,8 +16,7 @@ import {
 import { NearMeList, NearMeToggle, useUserLocation } from "./NearMe";
 import { placeToMarker, placesInCategories } from "./explore";
 import { NEARBY_RADIUS_METERS, nearbyPlaces } from "../places/nearby";
-
-const NO_PINS: Marker[] = [];
+import useCampusLocations, { NO_PINS } from "../places/data/LoadLocations";
 
 export default function CampusSearch() {
   const { classes, places, loading, error, addPlace } = useCampusSearch();
@@ -26,7 +24,7 @@ export default function CampusSearch() {
   const [categories, setCategories] = useState<SearchCategory[]>(
     Object.keys(searchCategories) as SearchCategory[],
   );
-  const [markers, setMarkers] = useState<Marker[]>([]);
+  const { markers, setMarkers } = useCampusLocations();
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const results = searchResults(classes, places, search, categories);
