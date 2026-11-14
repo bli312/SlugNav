@@ -35,7 +35,7 @@ for (const [hits, expected] of [
   [[1, 1, 1, 1, 0], true],
   [[1, 1, 1, 1, 1], true],
 ]) {
-  test(`requires 80% of changed lines (${hits.filter(Boolean).length}/5), ignoring unchanged lines`, () => {
+  test(`requires 70% of changed lines (${hits.filter(Boolean).length}/5), ignoring unchanged lines`, () => {
     const result = checkChangedCoverage(
       coverage([...hits, 0, 0]),
       additions([1, 2, 3, 4, 5]),

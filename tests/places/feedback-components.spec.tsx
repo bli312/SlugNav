@@ -1,10 +1,6 @@
 import React from "react";
 import { beforeEach, expect, jest, test } from "@jest/globals";
-import {
-  render,
-  screen,
-  userEvent,
-} from "@testing-library/react-native";
+import { render, screen, userEvent } from "@testing-library/react-native";
 import PlaceFeedbackModal from "../../src/components/places/PlaceFeedbackModal";
 import * as feedbackApi from "../../src/components/places/feedback";
 import type { Place } from "../../src/components/places/places";
@@ -79,9 +75,7 @@ test("renders place details, voting choices, and handles casting vote", async ()
   );
 
   expect(await screen.findByText(/Baskin Engineering 105/)).toBeOnTheScreen();
-  expect(
-    screen.getByText(/Classroom · Community Feedback/),
-  ).toBeOnTheScreen();
+  expect(screen.getByText(/Classroom · Community Feedback/)).toBeOnTheScreen();
 
   // Check that predefined options appear
   expect(screen.getByText("Outlets")).toBeOnTheScreen();
@@ -140,9 +134,7 @@ test("posting a comment and deleting an existing comment", async () => {
   );
 
   // Delete own comment
-  await user.press(
-    screen.getByRole("button", { name: "Delete comment 1" }),
-  );
+  await user.press(screen.getByRole("button", { name: "Delete comment 1" }));
   expect(api.deleteComment).toHaveBeenCalledWith(expect.anything(), 1);
 });
 
@@ -175,9 +167,7 @@ test("submitting a report opens form and sends report", async () => {
   expect(screen.getByText("Select reason:")).toBeOnTheScreen();
 
   // Select reason and add details
-  await user.press(
-    screen.getByRole("radio", { name: "Duplicate place" }),
-  );
+  await user.press(screen.getByRole("radio", { name: "Duplicate place" }));
   await user.type(
     screen.getByLabelText("Report details"),
     "Listed twice in directory",

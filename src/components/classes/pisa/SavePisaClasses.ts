@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { PisaClass } from "./PisaElements.ts";
-import { parsePisaMeetings } from "./ParsePisaMeetings.ts";
+import { parsePisaMeetings } from "./parse/ParsePisaMeetings.ts";
 
 export async function savePisaClasses(
   client: SupabaseClient,

@@ -24,7 +24,8 @@
         {
           "locationWhenInUsePermission": "SlugNav uses your location only to show nearby places. It isn't saved or shared."
         }
-      ]
+      ],
+      "expo-status-bar"
     ]
   }
 }
