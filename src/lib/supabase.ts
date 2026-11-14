@@ -1,64 +1,146 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { getRandomValues } from "expo-crypto";
-import { Platform } from "react-native";
+import { AppState, Platform } from 'react-native'
+import 'react-native-url-polyfill/auto'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { createClient } from '@supabase/supabase-js'
 
-// Expo replaces these exact property references when it builds the app.
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const publishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!
+const supabasePublishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
 
-let client: ReturnType<typeof createClient> | undefined;
+export const supabase = createClient(
+  supabaseUrl, 
+  supabasePublishableKey, 
+  {
+    auth: {
+      ...(Platform.OS !== 'web' 
+        ? { storage: AsyncStorage }
+        : {}),
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: false,
+      },
+    }
+)
 
-export function isSupabaseConfigured(): boolean {
-  return Boolean(url && publishableKey);
+// Handle session refreshing on native platforms.
+if (Platform.OS !== 'web') {
+  AppState.addEventListener('change', (state) => {
+    if (state === 'active') {
+      supabase.auth.startAutoRefresh()
+    } else {
+      supabase.auth.stopAutoRefresh()
+    }
+  })
 }
 
-/**
- * Use this shared client for auth and database requests. Creating it lazily lets
- * teammates work on screens before configuring their local Supabase connection.
- */
-export function getSupabase(): SupabaseClient {
-  if (client) return client;
+// Get classes belonging to the current user.
+export async function getClasses() {
+  // Get the currently logged-in user
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
 
-  if (!url || !publishableKey) {
-    throw new Error(
-      "Supabase is not configured. Copy .env.example to .env.local, add the project publishable key, and restart Expo.",
-    );
+  if (userError) throw userError
+
+  if (!user) {
+    throw new Error('User is not logged in')
   }
 
-  const parsedUrl = new URL(url);
-  if (
-    !["https:", "http:"].includes(parsedUrl.protocol) ||
-    parsedUrl.pathname !== "/" ||
-    parsedUrl.search ||
-    parsedUrl.hash
-  ) {
-    throw new Error("Use the Supabase project API URL, not its dashboard URL.");
+  // Read classrooms belonging to this user
+  const { data, error } = await supabase
+  .from('places')
+  .select('*')
+  .eq('id', user.id)
+  .order('created_at', { ascending: false })
+
+  if (error) throw error
+
+  return data
+}
+
+// Delete a class belonging to the current user.
+export async function deleteClass(classId: string) {
+  const {
+    data: { user },
+    error: authError
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return {
+      success: false,
+      error: authError?.message || 'User not authenticated',
+    }
+  }
+  
+  const { error } = await supabase
+  .from('places')
+  .delete()
+  .eq('id', classId)
+  .eq('id', user.id)
+
+  if (error) {
+    console.error('Error deleting class:', error.message)
+    return { success: false, error: error.message,}
   }
 
-  if (!publishableKey.startsWith("sb_publishable_")) {
-    throw new Error(
-      "Use a Supabase publishable key (sb_publishable_), never a secret or service-role key.",
-    );
+  return { success: true }
+}
+
+// Read uploaded media belonging to the current user.
+export async function readUploadedMedia() {
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser()
+
+  if (userError) throw userError
+
+  if (!user) {
+    throw new Error('User is not logged in')
   }
 
-  // Hermes needs a secure random source for Supabase's PKCE verifier.
-  if (Platform.OS !== "web" && !globalThis.crypto?.getRandomValues) {
-    Object.defineProperty(globalThis, "crypto", {
-      configurable: true,
-      value: { ...globalThis.crypto, getRandomValues },
-    });
+  const { data, error } = await supabase.storage
+  .from('uploads')
+  .list(user.id)
+
+  if (error) throw error
+
+  const media = data.map((file) => {
+    const filePath = `${user.id}/${file.name}`
+
+    const { data: urlData } = supabase.storage
+    .from('uploads')
+    .getPublicUrl(filePath)
+
+    return {
+      name: file.name,
+      id: file.id,
+      created_at: file.created_at,
+      url: urlData.publicUrl
+    }
+  })
+  
+  return media
+}
+
+// Delete an uploaded file.
+export async function deleteUploadedFile(filePath: string) {
+  try {
+    const { data, error } = await supabase.storage
+    .from('uploads')
+    .remove([filePath])
+
+    if (error) throw error
+
+    console.log('File deleted successfully:', data)
+
+    return data
+  } catch (error) {
+    console.error(
+      'Error deleting uploaded file:', 
+      error instanceof Error ? error.message : error
+    )
+
+    throw error
   }
-
-  client = createClient(url, publishableKey, {
-    auth: {
-      ...(Platform.OS !== "web" ? { storage: AsyncStorage } : {}),
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: false,
-      flowType: "pkce",
-    },
-  });
-
-  return client;
 }
