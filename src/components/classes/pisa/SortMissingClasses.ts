@@ -1,6 +1,6 @@
-import { PisaClass } from "./PisaElements";
-import parsePisaLocations from "./parse/ParsePisaLocations";
-import Locations from "@/components/places/data/Locations";
+import type { PisaClass } from "./PisaElements.ts";
+import parsePisaLocations from "./parse/ParsePisaLocations.ts";
+import Locations from "../../../components/places/data/Locations.ts";
 
 export function locationsWithRooms(classes: PisaClass[]): number {
   return classes.filter((pisaClass) => {

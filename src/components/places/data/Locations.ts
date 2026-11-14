@@ -2,8 +2,8 @@ import {
   Building,
   BuildingName,
   findBuildingByName,
-} from "./BuildingLocations";
-import Rooms, { Room } from "./RoomLocations";
+} from "./BuildingLocations.ts";
+import Rooms, { Room } from "./RoomLocations.ts";
 
 export interface Location {
   name: string;

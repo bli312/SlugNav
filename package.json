@@ -54,8 +54,8 @@
     "check:scripts": "npm run typecheck && npm run lint && npm run test:coverage",
     "lint": "eslint .",
     "format": "prettier --write **/*.{js,jsx,ts,tsx,json}",
-    "test": "node --experimental-strip-types --test && jest --runInBand",
-    "test:coverage": "c8 node --experimental-strip-types --test && jest --runInBand --coverage",
+    "test": "node --experimental-test-module-mocks --experimental-strip-types --test && jest --runInBand",
+    "test:coverage": "c8 node --experimental-test-module-mocks --experimental-strip-types --test && jest --runInBand --coverage",
     "prepare": "husky"
   },
   "c8": {

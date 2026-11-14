@@ -2,7 +2,7 @@ import {
   Building,
   BuildingName,
   findBuildingByName,
-} from "./BuildingLocations";
+} from "./BuildingLocations.ts";
 
 export interface Room {
   building: Building | undefined;

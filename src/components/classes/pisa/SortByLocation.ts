@@ -1,5 +1,5 @@
-import parsePisaLocations from "./parse/ParsePisaLocations";
-import { PisaClass } from "./PisaElements";
+import parsePisaLocations from "./parse/ParsePisaLocations.ts";
+import type { PisaClass } from "./PisaElements.ts";
 
 export const UNKNOWN = "Unknown Location";
 
