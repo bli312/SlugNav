@@ -83,13 +83,7 @@
     "collectCoverageFrom": [
       "src/**/*.{ts,tsx}",
       "!src/**/*.d.ts",
-      "!src/**/types.ts",
-      "!src/components/classes/pisa/**",
-      "!src/components/places/data/**",
-      "!src/hooks/**",
-      "!src/lib/**",
-      "!src/providers/**",
-      "!src/util/**"
+      "!src/**/types.ts"
     ],
     "coverageDirectory": "coverage/components",
     "coverageReporters": [

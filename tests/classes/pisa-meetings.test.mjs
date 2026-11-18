@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import * as cheerio from "cheerio";
 import { parsePisaMeetings } from "../../src/components/classes/pisa/parse/ParsePisaMeetings.ts";
-import scrapeClass from "../../src/components/classes/pisa/ScrapePisaClass.d.ts";
+import scrapeClass from "../../src/components/classes/pisa/ScrapePisaClass.ts";
 
 test("PISA meeting formats become local days and times, with missing details left null", () => {
   for (const [text, days, start, end] of [
