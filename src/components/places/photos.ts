@@ -49,6 +49,23 @@ function randomId(): string {
   );
 }
 
+async function signedInUserId(client: SupabaseClient): Promise<string> {
+  const {
+    data: { session },
+  } = await client.auth.getSession();
+  if (!session?.user.id) throw new Error("Sign in to add photos.");
+  return session.user.id;
+}
+
+// Checks the photo before anything is uploaded; returns its file extension.
+function photoExtension(photo: PhotoFile): string {
+  const extension = photoExtensions[photo.contentType];
+  if (!extension) throw new Error("Use a JPEG, PNG, or WebP photo.");
+  if (photo.data.byteLength > MAX_PHOTO_BYTES)
+    throw new Error("Photos must be 5 MB or smaller.");
+  return extension;
+}
+
 // Uploads the file to <user id>/<place id>/<random id>.<extension>, then saves
 // its row. If the row can't be saved, the file is removed so none is left behind.
 export async function uploadPlacePhoto(
@@ -56,16 +73,8 @@ export async function uploadPlacePhoto(
   placeId: number,
   photo: PhotoFile,
 ): Promise<PlacePhoto> {
-  const {
-    data: { session },
-  } = await client.auth.getSession();
-  const userId = session?.user.id;
-  if (!userId) throw new Error("Sign in to add photos.");
-  const extension = photoExtensions[photo.contentType];
-  if (!extension) throw new Error("Use a JPEG, PNG, or WebP photo.");
-  if (photo.data.byteLength > MAX_PHOTO_BYTES)
-    throw new Error("Photos must be 5 MB or smaller.");
-
+  const userId = await signedInUserId(client);
+  const extension = photoExtension(photo);
   const storagePath = `${userId}/${placeId}/${randomId()}.${extension}`;
   const bucket = client.storage.from(PLACE_PHOTOS_BUCKET);
   const { error: uploadError } = await bucket.upload(storagePath, photo.data, {
