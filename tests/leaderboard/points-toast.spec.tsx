@@ -39,6 +39,12 @@ jest.mock("../../src/components/places/feedback", () => ({
   postComment: jest.fn(),
   deleteComment: jest.fn(),
 }));
+// The place details window also loads photos (US-3.1-T-2); these places have none.
+jest.mock("../../src/components/places/photos", () => ({
+  getPlacePhotos: jest.fn(async () => []),
+  uploadPlacePhoto: jest.fn(),
+  deletePlacePhoto: jest.fn(),
+}));
 
 const mockPlaces = jest.mocked(placesApi);
 const mockFeedback = jest.mocked(feedbackApi);
@@ -128,7 +134,11 @@ test("US-3.2-T-2 AC2: posting a place comment displays +10 Points! toast", async
 
   await render(
     <PointsToastProvider>
-      <PlaceFeedbackModal place={samplePlace} visible={true} onClose={jest.fn()} />
+      <PlaceFeedbackModal
+        place={samplePlace}
+        visible={true}
+        onClose={jest.fn()}
+      />
     </PointsToastProvider>,
   );
 
@@ -146,7 +156,11 @@ test("US-3.2-T-2 AC3: liking a place or casting a first-time feature vote displa
 
   await render(
     <PointsToastProvider>
-      <PlaceFeedbackModal place={samplePlace} visible={true} onClose={jest.fn()} />
+      <PlaceFeedbackModal
+        place={samplePlace}
+        visible={true}
+        onClose={jest.fn()}
+      />
     </PointsToastProvider>,
   );
 
@@ -192,7 +206,11 @@ test("US-3.2-T-2 AC4: changing an existing vote does not display positive point 
 
   await render(
     <PointsToastProvider>
-      <PlaceFeedbackModal place={samplePlace} visible={true} onClose={jest.fn()} />
+      <PlaceFeedbackModal
+        place={samplePlace}
+        visible={true}
+        onClose={jest.fn()}
+      />
     </PointsToastProvider>,
   );
 
@@ -278,7 +296,11 @@ test("US-3.2-T-2 AC6: unliking a place does not display positive point award toa
 
   await render(
     <PointsToastProvider>
-      <PlaceFeedbackModal place={samplePlace} visible={true} onClose={jest.fn()} />
+      <PlaceFeedbackModal
+        place={samplePlace}
+        visible={true}
+        onClose={jest.fn()}
+      />
     </PointsToastProvider>,
   );
 
