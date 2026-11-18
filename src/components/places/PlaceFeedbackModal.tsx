@@ -24,6 +24,7 @@ import {
   type ReportReason,
 } from "./feedback";
 import { placeTypes, type Place } from "./places";
+import PlacePhotos from "./PlacePhotos";
 import { PointsToastView, usePointsToast } from "../leaderboard/PointsToast";
 
 interface PlaceFeedbackModalProps {
@@ -134,13 +135,15 @@ export default function PlaceFeedbackModal({
     setSubmittingComment(true);
     setError(null);
     try {
-      const newComment = await postComment(getSupabase(), place.id, commentText);
+      const newComment = await postComment(
+        getSupabase(),
+        place.id,
+        commentText,
+      );
       showPointsToast(10, "Comment posted");
       setCommentText("");
       setFeedback((prev) =>
-        prev
-          ? { ...prev, comments: [newComment, ...prev.comments] }
-          : prev,
+        prev ? { ...prev, comments: [newComment, ...prev.comments] } : prev,
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Comment failed.");
@@ -214,6 +217,11 @@ export default function PlaceFeedbackModal({
             </View>
           ) : (
             <ScrollView style={styles.scroll}>
+              <PlacePhotos
+                place={place}
+                userId={userId}
+                onPhotoAdded={() => showPointsToast(20, "Photo added")}
+              />
               {/* Like this location */}
               <View style={styles.likeSection}>
                 <Pressable
@@ -226,10 +234,7 @@ export default function PlaceFeedbackModal({
                 >
                   <Text style={styles.likeIcon}>{isLiked ? "❤️" : "🤍"}</Text>
                   <Text
-                    style={[
-                      styles.likeText,
-                      isLiked && styles.likeTextLiked,
-                    ]}
+                    style={[styles.likeText, isLiked && styles.likeTextLiked]}
                   >
                     {isLiked ? "Liked" : "Like this location"} ({likesCount})
                   </Text>
@@ -247,13 +252,16 @@ export default function PlaceFeedbackModal({
                       <View style={styles.choicesRow}>
                         {opt.choices.map((choice) => {
                           const count = summary?.counts[choice.value] ?? 0;
-                          const isSelected = summary?.userChoice === choice.value;
+                          const isSelected =
+                            summary?.userChoice === choice.value;
                           return (
                             <Pressable
                               key={choice.value}
                               accessibilityRole="button"
                               accessibilityLabel={`${opt.label}: ${choice.label} (${count})`}
-                              onPress={() => void handleVote(opt.key, choice.value)}
+                              onPress={() =>
+                                void handleVote(opt.key, choice.value)
+                              }
                               style={[
                                 styles.choiceButton,
                                 isSelected && styles.choiceButtonSelected,
@@ -337,7 +345,9 @@ export default function PlaceFeedbackModal({
                   </Text>
                 ) : showReportForm ? (
                   <View style={styles.reportForm}>
-                    <Text style={styles.sectionHeader}>⚠️ Report This Place</Text>
+                    <Text style={styles.sectionHeader}>
+                      ⚠️ Report This Place
+                    </Text>
                     <Text style={styles.fieldLabel}>Select reason:</Text>
                     <View style={styles.reasonsList}>
                       {Object.entries(reportReasons).map(([rKey, rLabel]) => (
@@ -345,17 +355,21 @@ export default function PlaceFeedbackModal({
                           key={rKey}
                           accessibilityRole="radio"
                           accessibilityLabel={rLabel}
-                          accessibilityState={{ checked: reportReason === rKey }}
+                          accessibilityState={{
+                            checked: reportReason === rKey,
+                          }}
                           onPress={() => setReportReason(rKey as ReportReason)}
                           style={[
                             styles.reasonOption,
-                            reportReason === rKey && styles.reasonOptionSelected,
+                            reportReason === rKey &&
+                              styles.reasonOptionSelected,
                           ]}
                         >
                           <Text
                             style={[
                               styles.reasonText,
-                              reportReason === rKey && styles.reasonTextSelected,
+                              reportReason === rKey &&
+                                styles.reasonTextSelected,
                             ]}
                           >
                             {rLabel}
@@ -484,7 +498,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   optionContainer: { marginBottom: 12 },
-  optionLabel: { fontSize: 14, fontWeight: "600", color: "#1D2E24", marginBottom: 6 },
+  optionLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1D2E24",
+    marginBottom: 6,
+  },
   choicesRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   choiceButton: {
     paddingVertical: 6,
@@ -535,7 +554,12 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 13, color: "#8B9890", fontStyle: "italic" },
   reportTrigger: { paddingVertical: 8, alignItems: "center" },
   reportTriggerText: { color: "#A12828", fontSize: 13, fontWeight: "500" },
-  reportedNotice: { color: "#174B35", fontSize: 13, fontWeight: "500", textAlign: "center" },
+  reportedNotice: {
+    color: "#174B35",
+    fontSize: 13,
+    fontWeight: "500",
+    textAlign: "center",
+  },
   reportForm: { backgroundColor: "#FDF4F4", padding: 12, borderRadius: 8 },
   fieldLabel: { fontSize: 13, color: "#526259", marginBottom: 6 },
   reasonsList: { gap: 6, marginBottom: 8 },
