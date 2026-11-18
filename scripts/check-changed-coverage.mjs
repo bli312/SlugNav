@@ -66,13 +66,9 @@ export function checkChangedCoverage(coverage, changes) {
     if (
       !/^(src\/.*\.tsx?|supabase\/functions\/.*\/handler\.ts)$/.test(file) ||
       file.endsWith(".d.ts") ||
-      file.endsWith("/types.ts") ||
-      /^src\/(components\/classes\/pisa|components\/places\/data|hooks|lib|providers|util)\//.test(
-        file,
-      )
-    ) {
+      file.endsWith("/types.ts")
+    )
       continue;
-    }
     if (!numbers.size) continue;
     const lines = coverage.get(file);
     if (!lines)
