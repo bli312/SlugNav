@@ -115,9 +115,12 @@ export default function PlaceFeedbackModal({
 
   async function handleVote(optionKey: string, choiceValue: string) {
     if (!place) return;
+    const hadPriorVote = Boolean(feedback?.votes[optionKey]?.userChoice);
     try {
       await castVote(getSupabase(), place.id, optionKey, choiceValue);
-      showPointsToast(5, `Voted on ${optionKey}`);
+      if (!hadPriorVote) {
+        showPointsToast(5, `Voted on ${optionKey}`);
+      }
       // Refresh feedback to reflect updated counts
       const updated = await getPlaceFeedback(getSupabase(), place.id, userId);
       setFeedback(updated);

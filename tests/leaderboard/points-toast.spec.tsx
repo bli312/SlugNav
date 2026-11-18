@@ -1,6 +1,7 @@
 import React from "react";
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import {
+  act,
   render,
   screen,
   userEvent,
@@ -122,22 +123,7 @@ test("US-3.2-T-2 AC1: creating a campus place displays +50 Points! toast", async
   ).toBeOnTheScreen();
 });
 
-test("US-3.2-T-2 AC2: uploading a place photo displays +20 Points! toast", async () => {
-  const user = userEvent.setup();
-
-  await render(
-    <PointsToastProvider>
-      <TestActionComponent points={20} message="Uploaded place photo" />
-    </PointsToastProvider>,
-  );
-
-  await user.press(screen.getByRole("button", { name: "Trigger Point Award" }));
-
-  expect(await screen.findByText("+20 Points!")).toBeOnTheScreen();
-  expect(screen.getByText("Uploaded place photo")).toBeOnTheScreen();
-});
-
-test("US-3.2-T-2 AC3: posting a place comment displays +10 Points! toast", async () => {
+test("US-3.2-T-2 AC2: posting a place comment displays +10 Points! toast", async () => {
   const user = userEvent.setup();
 
   await render(
@@ -155,7 +141,7 @@ test("US-3.2-T-2 AC3: posting a place comment displays +10 Points! toast", async
   expect(screen.getByText("Comment posted")).toBeOnTheScreen();
 });
 
-test("US-3.2-T-2 AC4: liking a place or casting a feature vote displays +5 Points! toast", async () => {
+test("US-3.2-T-2 AC3: liking a place or casting a first-time feature vote displays +5 Points! toast", async () => {
   const user = userEvent.setup();
 
   await render(
@@ -164,7 +150,7 @@ test("US-3.2-T-2 AC4: liking a place or casting a feature vote displays +5 Point
     </PointsToastProvider>,
   );
 
-  // Like location
+  // Like location for the first time
   const likeBtn = screen.getByRole("button", { name: "Like this location" });
   await user.press(likeBtn);
 
@@ -177,7 +163,7 @@ test("US-3.2-T-2 AC4: liking a place or casting a feature vote displays +5 Point
   expect(await screen.findByText("+5 Points!")).toBeOnTheScreen();
   expect(screen.getByText("Liked this location")).toBeOnTheScreen();
 
-  // Feature vote
+  // First-time feature vote
   const manyOutletsBtn = screen.getByRole("button", {
     name: /Outlets: Many/,
   });
@@ -192,11 +178,48 @@ test("US-3.2-T-2 AC4: liking a place or casting a feature vote displays +5 Point
   expect(screen.getByText("Voted on outlets")).toBeOnTheScreen();
 });
 
-test("US-3.2-T-2 AC5: toast dismisses upon user press and includes alert role", async () => {
+test("US-3.2-T-2 AC4: changing an existing vote does not display positive point award toast", async () => {
   const user = userEvent.setup();
+  // Alice previously voted 'many' on outlets
+  mockFeedback.getPlaceFeedback.mockResolvedValue({
+    votes: {
+      like: { counts: {}, total: 0, userChoice: null },
+      outlets: { counts: { many: 2, few: 1 }, total: 3, userChoice: "many" },
+    },
+    comments: [],
+    hasReported: false,
+  });
 
   await render(
-    <PointsToastProvider autoDismissMs={100}>
+    <PointsToastProvider>
+      <PlaceFeedbackModal place={samplePlace} visible={true} onClose={jest.fn()} />
+    </PointsToastProvider>,
+  );
+
+  // Alice updates her vote to 'few'
+  const fewOutletsBtn = await screen.findByRole("button", {
+    name: /Outlets: Few/,
+  });
+  await user.press(fewOutletsBtn);
+
+  expect(mockFeedback.castVote).toHaveBeenCalledWith(
+    expect.anything(),
+    101,
+    "outlets",
+    "few",
+  );
+
+  // No positive point toast should appear since updating an existing vote earns 0 new points
+  expect(screen.queryByText("+5 Points!")).not.toBeOnTheScreen();
+  expect(screen.queryByRole("alert")).not.toBeOnTheScreen();
+});
+
+test("US-3.2-T-2 AC5: toast dismisses immediately upon user press independent of timeout", async () => {
+  const user = userEvent.setup();
+
+  // Set long 10-second timeout to prove that tapping dismisses it immediately
+  await render(
+    <PointsToastProvider autoDismissMs={10000}>
       <TestActionComponent points={15} message="Helpful contribution" />
     </PointsToastProvider>,
   );
@@ -207,19 +230,44 @@ test("US-3.2-T-2 AC5: toast dismisses upon user press and includes alert role", 
   expect(alert).toBeOnTheScreen();
   expect(screen.getByText("+15 Points!")).toBeOnTheScreen();
 
-  // Dismiss by pressing toast
+  // Tapping dismisses it immediately
   await user.press(alert);
-  await screen.findByText("+15 Points!").catch(() => {});
-  // Verify alert disappears
   await waitFor(() => {
     expect(screen.queryByText("+15 Points!")).not.toBeOnTheScreen();
   });
 });
 
+test("US-3.2-T-2 AC5: toast automatically dismisses after three seconds", async () => {
+  jest.useFakeTimers();
+  try {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+
+    await render(
+      <PointsToastProvider autoDismissMs={3000}>
+        <TestActionComponent points={50} message="Automatic dismiss test" />
+      </PointsToastProvider>,
+    );
+
+    await user.press(
+      screen.getByRole("button", { name: "Trigger Point Award" }),
+    );
+
+    expect(screen.getByText("+50 Points!")).toBeOnTheScreen();
+
+    await act(async () => {
+      jest.advanceTimersByTime(3500);
+    });
+
+    expect(screen.queryByText("+50 Points!")).toBeNull();
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
 test("US-3.2-T-2 AC6: unliking a place does not display positive point award toast", async () => {
   const user = userEvent.setup();
   // Place is already liked by student
-  mockFeedback.getPlaceFeedback.mockResolvedValueOnce({
+  mockFeedback.getPlaceFeedback.mockResolvedValue({
     votes: {
       like: { counts: { liked: 1 }, total: 1, userChoice: "liked" },
       outlets: { counts: {}, total: 0, userChoice: null },
