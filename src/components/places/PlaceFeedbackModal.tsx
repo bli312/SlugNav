@@ -24,6 +24,7 @@ import {
   type ReportReason,
 } from "./feedback";
 import { placeTypes, type Place } from "./places";
+import { usePointsToast } from "../leaderboard/PointsToast";
 
 interface PlaceFeedbackModalProps {
   place: Place | null;
@@ -38,6 +39,7 @@ export default function PlaceFeedbackModal({
 }: PlaceFeedbackModalProps) {
   const auth = useOptionalAuth();
   const userId = auth?.session?.user?.id;
+  const { showPointsToast } = usePointsToast();
 
   const [feedback, setFeedback] = useState<PlaceFeedback | null>(null);
   const [loading, setLoading] = useState(false);
@@ -96,6 +98,7 @@ export default function PlaceFeedbackModal({
         await deleteVote(getSupabase(), place.id, "like");
       } else {
         await castVote(getSupabase(), place.id, "like", "liked");
+        showPointsToast(5, "Liked this location");
       }
       const updated = await getPlaceFeedback(getSupabase(), place.id, userId);
       setFeedback(updated);
@@ -108,6 +111,7 @@ export default function PlaceFeedbackModal({
     if (!place) return;
     try {
       await castVote(getSupabase(), place.id, optionKey, choiceValue);
+      showPointsToast(5, `Voted on ${optionKey}`);
       // Refresh feedback to reflect updated counts
       const updated = await getPlaceFeedback(getSupabase(), place.id, userId);
       setFeedback(updated);
@@ -122,6 +126,7 @@ export default function PlaceFeedbackModal({
     setError(null);
     try {
       const newComment = await postComment(getSupabase(), place.id, commentText);
+      showPointsToast(10, "Comment posted");
       setCommentText("");
       setFeedback((prev) =>
         prev
