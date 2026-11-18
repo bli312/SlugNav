@@ -5,11 +5,14 @@ import React from "react";
 
 import { useSupabaseAutoRefresh } from "@/hooks/use-supabase-auto-refresh";
 import { AuthProvider, useAuth } from "@/providers/auth-provider";
+import { PointsToastProvider } from "@/components/leaderboard/PointsToast";
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootNavigator />
+      <PointsToastProvider>
+        <RootNavigator />
+      </PointsToastProvider>
     </AuthProvider>
   );
 }
@@ -43,6 +46,7 @@ function RootNavigator() {
           <Stack.Screen name="index" />
           <Stack.Screen name="classes" />
           <Stack.Screen name="feedback-reports" />
+          <Stack.Screen name="leaderboard" />
         </Stack.Protected>
         <Stack.Protected guard={!session}>
           <Stack.Screen name="login" />

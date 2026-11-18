@@ -4,6 +4,7 @@ import { getSupabase } from "@/lib/supabase";
 import type { MapLocation } from "../leaflet/mapLocation";
 import { createPlace, type Place } from "./places";
 import PlaceTypePicker from "./PlaceTypePicker";
+import { usePointsToast } from "../leaderboard/PointsToast";
 
 type Props = {
   location: MapLocation | null;
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export default function AddPlaceForm({ location, onSaved, onCancel }: Props) {
+  const { showPointsToast } = usePointsToast();
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +26,9 @@ export default function AddPlaceForm({ location, onSaved, onCancel }: Props) {
     setBusy(true);
     setError(null);
     try {
-      onSaved(await createPlace(getSupabase(), name, type, location));
+      const savedPlace = await createPlace(getSupabase(), name, type, location);
+      showPointsToast(50, `Added campus place: ${savedPlace.name}`);
+      onSaved(savedPlace);
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Could not save the place.",
@@ -39,9 +43,7 @@ export default function AddPlaceForm({ location, onSaved, onCancel }: Props) {
     <View style={styles.form}>
       <View style={styles.noticeBubble}>
         <Text style={styles.noticeIcon}>ℹ️</Text>
-        <Text style={styles.noticeText}>
-          Creation is for all UCSC users.
-        </Text>
+        <Text style={styles.noticeText}>Creation is for all UCSC users.</Text>
       </View>
 
       <Text>
