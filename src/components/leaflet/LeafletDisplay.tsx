@@ -5,6 +5,7 @@ import Marker from "./LeafletMarker";
 import LeafletMap from "./LeafletMap";
 import { readMapLocation, type MapLocation } from "./mapLocation";
 import { toPins } from "./pinLayer";
+import type { WalkingRoute } from "../../lib/walkingRoute";
 
 interface LeafletDisplayProps {
   markers: Array<Marker>;
@@ -12,6 +13,7 @@ interface LeafletDisplayProps {
   pins?: Array<Marker>;
   // Shown as a "you are here" dot; null removes it.
   userLocation?: MapLocation | null;
+  route?: WalkingRoute["geometry"] | null;
   onLocationSelect?: (location: MapLocation) => void;
 }
 
@@ -19,6 +21,7 @@ export default function LeafletDisplay({
   markers,
   pins,
   userLocation,
+  route,
   onLocationSelect,
 }: LeafletDisplayProps) {
   const webView = useRef<WebView<object>>(null);
@@ -76,11 +79,20 @@ export default function LeafletDisplay({
     [userLocation, postToMap],
   );
   useEffect(() => sendUserLocation(true), [sendUserLocation]);
+  const sendRoute = useCallback(() => {
+    if (route === undefined) return;
+    postToMap(
+      { type: "set-walking-route", geometry: route },
+      `window.setWalkingRoute?.(${JSON.stringify(route)})`,
+    );
+  }, [route, postToMap]);
+  useEffect(sendRoute, [sendRoute]);
   // Messages sent before the page loads are lost, so resend on load.
   const syncMap = () => {
     updatePicker();
     sendPins();
     sendUserLocation(false);
+    sendRoute();
   };
   useEffect(() => {
     if (Platform.OS !== "web") return;

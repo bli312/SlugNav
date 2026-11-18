@@ -12,9 +12,7 @@ export type LocationApi = {
   }>;
 };
 
-// Asks for permission, then reads the device's position once. The position
-// stays on the device: it is only used to measure distances to places and is
-// never saved or sent to Supabase.
+// Asks for permission, then reads the device's position once.
 export async function findUserLocation(
   api: LocationApi,
 ): Promise<UserLocation> {
