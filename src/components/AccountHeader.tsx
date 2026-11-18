@@ -7,6 +7,7 @@ interface AccountHeaderProps {
   onSignOut: () => void;
   onNavigateClasses: () => void;
   onNavigateFeedbackReports?: () => void;
+  onNavigateLeaderboard?: () => void;
 }
 
 export default function AccountHeader({
@@ -15,6 +16,7 @@ export default function AccountHeader({
   onSignOut,
   onNavigateClasses,
   onNavigateFeedbackReports,
+  onNavigateLeaderboard,
 }: AccountHeaderProps) {
   return (
     <View style={styles.account}>
@@ -24,6 +26,9 @@ export default function AccountHeader({
         </Text>
         <Text numberOfLines={1}>{userEmail}</Text>
       </View>
+      {onNavigateLeaderboard && (
+        <Button title="Leaderboard" onPress={onNavigateLeaderboard} />
+      )}
       {onNavigateFeedbackReports && (
         <Button
           title="Feedback and Report"
