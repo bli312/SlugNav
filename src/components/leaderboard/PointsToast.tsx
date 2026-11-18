@@ -8,14 +8,25 @@ import React, {
 } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
+export interface PointsToastData {
+  points: number;
+  message: string;
+}
+
 export interface PointsToastContextType {
   showPointsToast: (points: number, message: string) => void;
   hidePointsToast: () => void;
+  toast: PointsToastData | null;
+  registerModal: () => () => void;
+  hasActiveModal: boolean;
 }
 
 export const PointsToastContext = createContext<PointsToastContextType>({
   showPointsToast: () => {},
   hidePointsToast: () => {},
+  toast: null,
+  registerModal: () => () => {},
+  hasActiveModal: false,
 });
 
 export function usePointsToast(): PointsToastContextType {
@@ -27,51 +38,15 @@ export interface PointsToastProps {
   autoDismissMs?: number;
 }
 
-export function PointsToastProvider({
-  children,
-  autoDismissMs = 3000,
-}: PointsToastProps) {
-  const [toast, setToast] = useState<{
-    points: number;
-    message: string;
-  } | null>(null);
-
+export function PointsToastView() {
+  const { toast, hidePointsToast } = usePointsToast();
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.5)).current;
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const hidePointsToast = useCallback(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    Animated.parallel([
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scale, {
-        toValue: 0.8,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setToast(null);
-    });
-  }, [opacity, scale]);
-
-  const showPointsToast = useCallback(
-    (points: number, message: string) => {
-      if (points <= 0) return;
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-
-      setToast({ points, message });
+  useEffect(() => {
+    if (toast) {
       opacity.setValue(0);
       scale.setValue(0.5);
-
       Animated.parallel([
         Animated.timing(opacity, {
           toValue: 1,
@@ -85,13 +60,79 @@ export function PointsToastProvider({
           useNativeDriver: true,
         }),
       ]).start();
+    }
+  }, [toast, opacity, scale]);
+
+  if (!toast) return null;
+
+  return (
+    <View style={styles.toastOverlay} pointerEvents="box-none">
+      <Animated.View
+        style={[
+          styles.toastContainer,
+          {
+            opacity,
+            transform: [{ scale }],
+          },
+        ]}
+      >
+        <Pressable
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          accessibilityLabel={`Earned ${toast.points} points. ${toast.message}. Tap to dismiss.`}
+          onPress={hidePointsToast}
+          style={styles.toastCard}
+        >
+          <View style={styles.iconCircle}>
+            <Text style={styles.badgeIcon}>🎉</Text>
+          </View>
+          <Text style={styles.pointsText}>+{toast.points} Points!</Text>
+          <Text style={styles.messageText} numberOfLines={2}>
+            {toast.message}
+          </Text>
+          <Text style={styles.dismissHint}>Tap to dismiss</Text>
+        </Pressable>
+      </Animated.View>
+    </View>
+  );
+}
+
+export function PointsToastProvider({
+  children,
+  autoDismissMs = 3000,
+}: PointsToastProps) {
+  const [toast, setToast] = useState<PointsToastData | null>(null);
+  const [modalCount, setModalCount] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const hidePointsToast = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    setToast(null);
+  }, []);
+
+  const showPointsToast = useCallback(
+    (points: number, message: string) => {
+      if (points <= 0) return;
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+
+      setToast({ points, message });
 
       timerRef.current = setTimeout(() => {
-        hidePointsToast();
+        setToast(null);
       }, autoDismissMs);
     },
-    [autoDismissMs, hidePointsToast, opacity, scale],
+    [autoDismissMs],
   );
+
+  const registerModal = useCallback(() => {
+    setModalCount((c) => c + 1);
+    return () => setModalCount((c) => Math.max(0, c - 1));
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -102,38 +143,17 @@ export function PointsToastProvider({
   }, []);
 
   return (
-    <PointsToastContext.Provider value={{ showPointsToast, hidePointsToast }}>
+    <PointsToastContext.Provider
+      value={{
+        showPointsToast,
+        hidePointsToast,
+        toast,
+        registerModal,
+        hasActiveModal: modalCount > 0,
+      }}
+    >
       {children}
-      {toast && (
-        <View style={styles.toastOverlay} pointerEvents="box-none">
-          <Animated.View
-            style={[
-              styles.toastContainer,
-              {
-                opacity,
-                transform: [{ scale }],
-              },
-            ]}
-          >
-            <Pressable
-              accessibilityRole="alert"
-              accessibilityLiveRegion="polite"
-              accessibilityLabel={`Earned ${toast.points} points. ${toast.message}. Tap to dismiss.`}
-              onPress={hidePointsToast}
-              style={styles.toastCard}
-            >
-              <View style={styles.iconCircle}>
-                <Text style={styles.badgeIcon}>🎉</Text>
-              </View>
-              <Text style={styles.pointsText}>+{toast.points} Points!</Text>
-              <Text style={styles.messageText} numberOfLines={2}>
-                {toast.message}
-              </Text>
-              <Text style={styles.dismissHint}>Tap to dismiss</Text>
-            </Pressable>
-          </Animated.View>
-        </View>
-      )}
+      {modalCount === 0 && <PointsToastView />}
     </PointsToastContext.Provider>
   );
 }
@@ -148,6 +168,7 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.15)",
   },
   toastContainer: {
     width: "85%",
@@ -158,8 +179,8 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#174B35",
     borderRadius: 24,
-    paddingVertical: 26,
-    paddingHorizontal: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 22,
     alignItems: "center",
     borderWidth: 2.5,
     borderColor: "#FFD700",
@@ -170,18 +191,18 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   iconCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: "rgba(255, 215, 0, 0.2)",
     borderWidth: 2,
     borderColor: "#FFD700",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 12,
+    marginBottom: 10,
   },
   badgeIcon: {
-    fontSize: 34,
+    fontSize: 32,
   },
   pointsText: {
     color: "#FFD700",
@@ -201,7 +222,7 @@ const styles = StyleSheet.create({
   dismissHint: {
     color: "rgba(255, 255, 255, 0.65)",
     fontSize: 12,
-    marginTop: 14,
+    marginTop: 12,
     fontWeight: "500",
     textTransform: "uppercase",
     letterSpacing: 0.8,
