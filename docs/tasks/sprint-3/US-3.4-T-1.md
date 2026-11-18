@@ -30,3 +30,5 @@ Serves US-3.4 (receive reminders about when to leave for class). This task gives
 1. When notification permission is allowed, either beforehand or after a permission request, sending submits exactly one immediate notification containing the supplied title and body and returns its identifier. Foreground notifications use the system banner and notification list, subject to device settings.
 2. When notification permission is denied, sending returns `null` and submits no notification. It does not request permission again when the operating system disallows another prompt.
 3. If a device notification operation fails, sending rejects with that error instead of returning a successful result.
+
+**Manual verification:** Noah confirmed that calling `sendNotification` from a temporary test button displayed the notification on his phone. The test button was removed afterward.

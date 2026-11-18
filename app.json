@@ -20,6 +20,12 @@
       "@maplibre/maplibre-react-native",
       "expo-web-browser",
       [
+        "expo-notifications",
+        {
+          "enableRemoteNotifications": false
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "SlugNav uses your location only to show nearby places. It isn't saved or shared."

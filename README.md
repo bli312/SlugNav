@@ -106,6 +106,13 @@ the dashboard. Name it `walking-route`, copy `index.ts` and `handler.ts` from
 `supabase/functions/walking-route/` into matching files in the editor, and deploy.
 Keep JWT verification enabled. Keep the dashboard code in sync with this repository.
 
+### Notifications
+
+Call `sendNotification(title, body)` from `@/lib/notifications` to request an
+immediate local notification on iOS or Android. It requests permission when
+needed and returns a notification ID, or `null` if permission is denied. Device
+errors reject the promise. It does not schedule future reminders.
+
 ## Useful Terminal Commands
 
 | Command | Purpose |
