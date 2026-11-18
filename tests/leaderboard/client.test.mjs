@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  awardUserPoints,
   formatPoints,
   getAnonymousSlug,
   getLeaderboard,
@@ -205,55 +204,5 @@ test("US-3.2-T-1 updateDisplayName validates input and upserts user_profiles", a
   await assert.rejects(
     updateDisplayName(errorClient, "u-123", "ValidName"),
     /Could not update display name\./,
-  );
-});
-
-test("US-3.2-T-1 awardUserPoints validates parameters and inserts into user_points", async () => {
-  let inserted = false;
-  const fakeClient = {
-    from: (table) => {
-      assert.equal(table, "user_points");
-      return {
-        insert: (row) => {
-          assert.equal(row.points, 25);
-          assert.equal(row.category, "bonus");
-          assert.equal(row.description, "Extra points");
-          assert.equal(row.user_id, "u-1");
-          inserted = true;
-          return Promise.resolve({ error: null });
-        },
-      };
-    },
-  };
-
-  await awardUserPoints(fakeClient, {
-    userId: "u-1",
-    points: 25,
-    category: "bonus",
-    description: "Extra points",
-  });
-  assert.ok(inserted);
-
-  // Invalid points <= 0
-  await assert.rejects(
-    awardUserPoints(fakeClient, { points: 0, category: "bonus" }),
-    /Points must be greater than zero\./,
-  );
-
-  // Blank category
-  await assert.rejects(
-    awardUserPoints(fakeClient, { points: 10, category: "  " }),
-    /Category is required\./,
-  );
-
-  // Insert error
-  const failClient = {
-    from: () => ({
-      insert: () => Promise.resolve({ error: { message: "fail" } }),
-    }),
-  };
-  await assert.rejects(
-    awardUserPoints(failClient, { points: 10, category: "bonus" }),
-    /Could not award points\./,
   );
 });

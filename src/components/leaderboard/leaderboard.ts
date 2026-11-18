@@ -16,13 +16,6 @@ export interface UserRankSummary {
   contributionsCount: number;
 }
 
-export interface PointAwardParams {
-  userId?: string;
-  points: number;
-  category: string;
-  description?: string;
-}
-
 export function getAnonymousSlug(userId: string): string {
   if (!userId) return "Anonymous Slug";
   const hex = userId.replace(/-/g, "").slice(0, 4);
@@ -141,34 +134,4 @@ export async function updateDisplayName(
   }
 
   return trimmed;
-}
-
-export async function awardUserPoints(
-  client: SupabaseClient,
-  params: PointAwardParams,
-): Promise<void> {
-  if (params.points <= 0) {
-    throw new Error("Points must be greater than zero.");
-  }
-
-  const category = params.category.trim();
-  if (!category) {
-    throw new Error("Category is required.");
-  }
-
-  const insertData: Record<string, unknown> = {
-    points: params.points,
-    category,
-    description: params.description?.trim() || null,
-  };
-
-  if (params.userId) {
-    insertData.user_id = params.userId;
-  }
-
-  const { error } = await client.from("user_points").insert(insertData);
-
-  if (error) {
-    throw new Error("Could not award points.");
-  }
 }

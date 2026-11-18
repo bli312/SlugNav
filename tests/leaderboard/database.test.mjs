@@ -21,6 +21,10 @@ const asSignedOut = async () => {
   await db.query("select set_config('request.jwt.claim.sub', '', false)");
 };
 
+const asServiceRole = async () => {
+  await db.exec("reset role; set role service_role");
+};
+
 before(async () => {
   await db.exec(`
     create role anon; create role authenticated; create role service_role bypassrls;
@@ -105,23 +109,18 @@ test("US-3.2-T-1 user_profiles RLS allows reading all profiles, but writing only
   await assert.rejects(db.query("select * from public.user_profiles"));
 });
 
-test("US-3.2-T-1 user_points RLS allows reading all points, but inserting only for oneself", async () => {
+test("US-3.2-T-1 user_points RLS prevents arbitrary client-side insertions", async () => {
+  // Signed-in users CANNOT insert arbitrary points for themselves directly
   await asUser(alice);
-  await db.query(
-    "insert into public.user_points (user_id, points, category, description) values ($1, 25, 'bonus', 'Welcome bonus')",
-    [alice],
+  await assert.rejects(
+    db.query(
+      "insert into public.user_points (user_id, points, category, description) values ($1, 1000000, 'cheat', 'Free points')",
+      [alice],
+    ),
   );
 
-  // Bob can read points
+  // Bob also cannot insert points for Alice
   await asUser(bob);
-  const { rows: bobSees } = await db.query(
-    "select user_id, points, category from public.user_points where user_id = $1",
-    [alice],
-  );
-  assert.equal(bobSees.length, 1);
-  assert.equal(bobSees[0].points, 25);
-
-  // Bob cannot insert points for Alice
   await assert.rejects(
     db.query(
       "insert into public.user_points (user_id, points, category) values ($1, 50, 'bonus')",
@@ -134,7 +133,7 @@ test("US-3.2-T-1 user_points RLS allows reading all points, but inserting only f
   await assert.rejects(db.query("select * from public.user_points"));
 });
 
-test("US-3.2-T-1 contributions automatically award points via database triggers", async () => {
+test("US-3.2-T-1 contributions award points via triggers and reverse points when contributions are deleted", async () => {
   // Alice adds a place -> triggers 50 points
   await asUser(alice);
   const { rows: placeRows } = await db.query(
@@ -167,34 +166,94 @@ test("US-3.2-T-1 contributions automatically award points via database triggers"
   );
   assert.equal(Number(alicePoints[0].total), 85);
   assert.equal(Number(alicePoints[0].count), 4);
+
+  // Unlike: Alice removes her vote -> points reversed by 5
+  await db.query(
+    "delete from public.place_votes where place_id = $1 and option_key = 'outlets'",
+    [placeId],
+  );
+  const { rows: afterUnlike } = await db.query(
+    "select sum(points) as total, count(*) as count from public.user_points where user_id = $1",
+    [alice],
+  );
+  assert.equal(Number(afterUnlike[0].total), 80);
+  assert.equal(Number(afterUnlike[0].count), 3);
+
+  // Like and unlike cycles do NOT accumulate points indefinitely
+  await db.query(
+    "insert into public.place_votes (place_id, option_key, choice) values ($1, 'outlets', 'many')",
+    [placeId],
+  );
+  await db.query(
+    "delete from public.place_votes where place_id = $1 and option_key = 'outlets'",
+    [placeId],
+  );
+  const { rows: afterCycle } = await db.query(
+    "select sum(points) as total, count(*) as count from public.user_points where user_id = $1",
+    [alice],
+  );
+  assert.equal(Number(afterCycle[0].total), 80);
+
+  // Delete comment -> removes 10 points
+  await db.query(
+    "delete from public.place_comments where place_id = $1",
+    [placeId],
+  );
+  const { rows: afterCommentDelete } = await db.query(
+    "select sum(points) as total, count(*) as count from public.user_points where user_id = $1",
+    [alice],
+  );
+  assert.equal(Number(afterCommentDelete[0].total), 70);
+
+  // Delete photo -> removes 20 points
+  await db.query(
+    "delete from public.place_photos where place_id = $1",
+    [placeId],
+  );
+  const { rows: afterPhotoDelete } = await db.query(
+    "select sum(points) as total, count(*) as count from public.user_points where user_id = $1",
+    [alice],
+  );
+  assert.equal(Number(afterPhotoDelete[0].total), 50);
+
+  // Delete place (as admin / service_role) -> removes 50 points
+  await asServiceRole();
+  await db.query(
+    "delete from public.places where id = $1",
+    [placeId],
+  );
+  const { rows: afterPlaceDelete } = await db.query(
+    "select coalesce(sum(points), 0) as total, count(*) as count from public.user_points where user_id = $1",
+    [alice],
+  );
+  assert.equal(Number(afterPlaceDelete[0].total), 0);
+  assert.equal(Number(afterPlaceDelete[0].count), 0);
 });
 
 test("US-3.2-T-1 get_leaderboard returns ranked contributors with display names and anonymous slugs", async () => {
-  // Alice earns 60 points and sets display name
+  // Alice sets display name
   await asUser(alice);
   await db.query(
     "insert into public.user_profiles (user_id, display_name) values ($1, 'SuperSlug')",
     [alice],
   );
+
+  // System seeds points for Alice, Bob, Charlie
+  await asServiceRole();
   await db.query(
-    "insert into public.user_points (user_id, points, category) values ($1, 60, 'manual')",
+    "insert into public.user_points (user_id, points, category, reference_type, reference_id) values ($1, 60, 'manual', 'test', '1')",
     [alice],
   );
-
-  // Bob earns 100 points, does NOT set display name (should get anonymous slug)
-  await asUser(bob);
   await db.query(
-    "insert into public.user_points (user_id, points, category) values ($1, 100, 'manual')",
+    "insert into public.user_points (user_id, points, category, reference_type, reference_id) values ($1, 100, 'manual', 'test', '2')",
     [bob],
   );
-
-  // Charlie earns 30 points
-  await asUser(charlie);
   await db.query(
-    "insert into public.user_points (user_id, points, category) values ($1, 30, 'manual')",
+    "insert into public.user_points (user_id, points, category, reference_type, reference_id) values ($1, 30, 'manual', 'test', '3')",
     [charlie],
   );
 
+  await asUser(alice);
   const { rows: board } = await db.query("select * from public.get_leaderboard(10)");
   assert.equal(board.length, 3);
 
@@ -217,13 +276,14 @@ test("US-3.2-T-1 get_leaderboard returns ranked contributors with display names 
 });
 
 test("US-3.2-T-1 get_user_rank returns correct standing for contributor and unranked student", async () => {
-  await asUser(alice);
+  await asServiceRole();
   await db.query(
-    "insert into public.user_points (user_id, points, category) values ($1, 50, 'place')",
+    "insert into public.user_points (user_id, points, category, reference_type, reference_id) values ($1, 50, 'place', 'test', '10')",
     [alice],
   );
 
   // Alice checks her rank
+  await asUser(alice);
   const { rows: aliceRank } = await db.query(
     "select * from public.get_user_rank($1)",
     [alice],
