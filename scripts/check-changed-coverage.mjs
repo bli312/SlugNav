@@ -7,27 +7,34 @@ const requiredCoverage = 80;
 
 export function parseCoverage(report) {
   const files = new Map();
-  let lines;
-  for (const record of report.split(/\r?\n/)) {
-    if (record.startsWith("SF:")) {
-      const file = record.slice(3);
-      if (!files.has(file)) files.set(file, new Map());
-      lines = files.get(file);
-    } else if (record.startsWith("DA:")) {
-      const [line, hits] = record.slice(3).split(",").map(Number);
-      if (
-        !lines ||
-        !Number.isInteger(line) ||
-        line < 1 ||
-        !Number.isFinite(hits) ||
-        hits < 0
-      ) {
-        throw new Error("Invalid LCOV line record.");
+  const placeholders = new Map();
+  for (const section of report.split(/(?=^SF:)/m)) {
+    const target = /^FN:\d+,\(empty-report\)\r?$/m.test(section)
+      ? placeholders
+      : files;
+    let lines;
+    for (const record of section.split(/\r?\n/)) {
+      if (record.startsWith("SF:")) {
+        const file = record.slice(3);
+        if (!target.has(file)) target.set(file, new Map());
+        lines = target.get(file);
+      } else if (record.startsWith("DA:")) {
+        const [line, hits] = record.slice(3).split(",").map(Number);
+        if (
+          !lines ||
+          !Number.isInteger(line) ||
+          line < 1 ||
+          !Number.isFinite(hits) ||
+          hits < 0
+        ) {
+          throw new Error("Invalid LCOV line record.");
+        }
+        lines.set(line, lines.get(line) || hits > 0);
       }
-      lines.set(line, lines.get(line) || hits > 0);
     }
   }
-  return files;
+  // c8 placeholders count every physical line; prefer measured reports when available.
+  return new Map([...placeholders, ...files]);
 }
 
 export function changedLines(diff) {
