@@ -41,3 +41,24 @@ test("renders Feedback and Report button and handles navigation", async () => {
   await user.press(signOutBtn);
   expect(onSignOut).toHaveBeenCalledTimes(1);
 });
+
+test("renders Leaderboard button and handles navigation when callback provided", async () => {
+  const user = userEvent.setup();
+  const onNavigateLeaderboard = jest.fn();
+
+  await render(
+    <AccountHeader
+      userEmail="student@ucsc.edu"
+      busy={false}
+      onSignOut={jest.fn()}
+      onNavigateClasses={jest.fn()}
+      onNavigateLeaderboard={onNavigateLeaderboard}
+    />,
+  );
+
+  const leaderboardBtn = screen.getByRole("button", { name: "Leaderboard" });
+  expect(leaderboardBtn).toBeOnTheScreen();
+
+  await user.press(leaderboardBtn);
+  expect(onNavigateLeaderboard).toHaveBeenCalledTimes(1);
+});

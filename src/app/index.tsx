@@ -20,6 +20,7 @@ export default function CampusMap() {
         onSignOut={() => void signOut()}
         onNavigateClasses={() => router.push("/classes")}
         onNavigateFeedbackReports={() => router.push("/feedback-reports")}
+        onNavigateLeaderboard={() => router.push("/leaderboard")}
       />
       {error && (
         <Text accessibilityRole="alert" style={styles.error}>
