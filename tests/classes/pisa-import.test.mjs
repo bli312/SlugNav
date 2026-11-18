@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { savePisaClasses } from "../../src/components/classes/pisa/SavePisaClasses.ts";
+import { savePisaClasses } from "../../src/components/classes/pisa/SavePisaClasses.d.ts";
 
 const sample = {
   code: "TEST 100 - 01",
