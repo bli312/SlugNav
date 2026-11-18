@@ -19,14 +19,15 @@ Out of scope: redeeming points for rewards or prizes; seasonal or weekly leaderb
     - Columns: `user_id` (UUID PK, references `auth.users(id)`), `display_name` (optional text up to 32 characters, trimmed), `created_at`, `updated_at`.
     - RLS enabled: signed-in users can read all profiles (`user_profiles_read`); only the authenticated owner can insert (`user_profiles_insert`) or update (`user_profiles_update`).
   - Table `public.user_points`:
-    - Columns: `id` (bigint PK), `user_id` (UUID, references `auth.users(id)`), `points` (integer > 0), `category` (text, non-empty), `description` (optional text up to 250 chars), `created_at`.
+    - Columns: `id` (bigint PK), `user_id` (UUID, references `auth.users(id)`), `points` (integer > 0), `category` (text, non-empty), `description` (optional text up to 250 chars), `reference_type` (text), `reference_id` (text), `created_at`.
+    - Unique constraint on `(user_id, reference_type, reference_id)` preventing duplicate awards.
     - Index on `user_id`.
-    - RLS enabled: signed-in users can read all point rows (`user_points_read`); authenticated users can insert only for themselves (`user_points_insert`).
-  - Triggers and point rules on existing contribution tables:
-    - `trg_place_points` on `public.places`: +50 points (`add_place`).
-    - `trg_photo_points` on `public.place_photos`: +20 points (`add_photo`).
-    - `trg_comment_points` on `public.place_comments`: +10 points (`add_comment`).
-    - `trg_vote_points` on `public.place_votes`: +5 points (`add_vote`).
+    - RLS and permissions: authenticated users have SELECT permission only. Client-side INSERT is completely revoked; points can ONLY be awarded or removed through trusted database triggers (`security definer`), preventing clients from giving themselves arbitrary points.
+  - Triggers and point rules on existing contribution tables (awards points on create, reverses points on delete):
+    - `places`: +50 points on insert (`add_place`), -50 points on delete.
+    - `place_photos`: +20 points on insert (`add_photo`), -20 points on delete.
+    - `place_comments`: +10 points on insert (`add_comment`), -10 points on delete.
+    - `place_votes`: +5 points on insert (`add_vote`), -5 points on delete (unliking removes credit; prevents infinite point farming).
   - View `public.leaderboard_view`: computes `dense_rank() over (order by total_points desc, contributions_count desc, user_id asc)`, joins `display_name`, and falls back to deterministic anonymous slugs `Slug <first-4-hex-of-user-id>`.
   - RPC function `public.get_leaderboard(limit_count integer default 50)`: returns table of `{ rank, user_id, display_name, total_points, contributions_count }`. Only callable by authenticated users and service_role.
   - RPC function `public.get_user_rank(target_user_id uuid default auth.uid())`: returns the target student's rank, display name/slug, total points, and contributions count. If the student has zero contributions, returns `rank: null`, `total_points: 0`, and `contributions_count: 0`.
@@ -35,7 +36,6 @@ Out of scope: redeeming points for rewards or prizes; seasonal or weekly leaderb
   - `getLeaderboard(client, limit)`: calls `get_leaderboard` RPC; falls back to querying `leaderboard_view` if RPC is unavailable; maps fields to camelCase.
   - `getUserRank(client, userId)`: calls `get_user_rank` RPC and returns `{ rank, userId, displayName, totalPoints, contributionsCount }`. Rejects empty `userId`.
   - `updateDisplayName(client, userId, displayName)`: trims name, validates length (1–32 chars), and upserts `public.user_profiles`. Rejects blank strings or names longer than 32 characters.
-  - `awardUserPoints(client, params)`: inserts a points row into `public.user_points`. Rejects points <= 0 or empty categories.
   - `getAnonymousSlug(userId)`: returns `"Slug " + hex` (e.g. `Slug 4a1b`).
   - `formatPoints(points)`: formats points display (e.g. `150 pts`, `1 pt`).
 - UI screen `src/components/leaderboard/LeaderboardScreen.tsx` & route `src/app/leaderboard.tsx`:
@@ -56,7 +56,7 @@ Out of scope: redeeming points for rewards or prizes; seasonal or weekly leaderb
 - Existing tests and bundling (`npm run check:scripts` and `expo export`) must keep passing.
 
 ## Acceptance criteria
-1. Adding a campus place, photo, comment, or vote automatically awards points to the user in `public.user_points`, and signed-out requests cannot read points or profiles.
+1. Adding a campus place, photo, comment, or vote automatically awards points to the user via database triggers; deleting a contribution (such as unliking or deleting a comment/photo/place) reverses the points; direct client-side point insertion is denied; and signed-out requests cannot read points or profiles.
 2. `public.get_leaderboard` returns contributors ordered by rank ascending and total points descending, using display names when set and anonymous slugs otherwise.
 3. `public.get_user_rank` returns the current user's rank and point totals, or `rank: null` and 0 points if unranked.
 4. The Leaderboard UI screen displays the student's standing banner, ranked list of contributors, and marks the current student with a `You` badge and highlight.
