@@ -2,6 +2,7 @@ import { loadPopup } from "./LeafletPopup";
 import type Marker from "./LeafletMarker";
 import { placePickerScript } from "./placePicker.ts";
 import { pinLayerScript } from "./pinLayer.ts";
+import { routeLayerScript } from "./routeLayer.ts";
 
 export default class LeafletMap {
   STARTING_LOCATION = {
@@ -64,6 +65,7 @@ export default class LeafletMap {
             }
             ${placePickerScript}
             ${pinLayerScript}
+            ${routeLayerScript}
           </script>
         </body>
       </html>

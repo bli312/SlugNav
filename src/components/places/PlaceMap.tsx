@@ -12,6 +12,7 @@ import LeafletDisplay from "../leaflet/LeafletDisplay";
 import type Marker from "../leaflet/LeafletMarker";
 import { createPopup } from "../leaflet/LeafletPopup";
 import type { MapLocation } from "../leaflet/mapLocation";
+import type { WalkingRoute } from "../../lib/walkingRoute";
 import AddPlaceForm from "./AddPlaceForm";
 import PlaceFeedbackModal from "./PlaceFeedbackModal";
 import { placeTypes, type Place } from "./places";
@@ -21,6 +22,7 @@ type Props = {
   // Pins updated in place, without reloading the map; see LeafletDisplay.
   pins?: Marker[];
   userLocation?: MapLocation | null;
+  route?: WalkingRoute["geometry"] | null;
   onPlaceAdded?: (place: Place) => void;
   children?: React.ReactNode;
 };
@@ -29,6 +31,7 @@ export default function PlaceMap({
   markers,
   pins,
   userLocation,
+  route,
   onPlaceAdded,
   children,
 }: Props) {
@@ -72,6 +75,7 @@ export default function PlaceMap({
         onLocationSelect={adding ? setLocation : undefined}
         pins={pins}
         userLocation={userLocation}
+        route={route}
       />
       {adding ? (
         <AddPlaceForm
@@ -83,7 +87,10 @@ export default function PlaceMap({
         <>
           {savedMarkers && (
             <View style={styles.savedRow}>
-              <Text style={styles.confirmation} accessibilityLiveRegion="polite">
+              <Text
+                style={styles.confirmation}
+                accessibilityLiveRegion="polite"
+              >
                 Place added.
               </Text>
               {savedPlace && (
