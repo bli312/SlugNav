@@ -20,6 +20,12 @@
       "@maplibre/maplibre-react-native",
       "expo-web-browser",
       [
+        "expo-notifications",
+        {
+          "enableRemoteNotifications": false
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "SlugNav uses your location to find nearby places and get walking routes. Route requests send your starting point and destination to Supabase and OpenRouteService."
