@@ -182,7 +182,70 @@ after delete on public.place_comments
 for each row
 execute function public.on_comment_deleted_remove_points();
 
--- Votes & Likes (+5 pts; reversed when unliked/removed)
+-- Votes & Likes (+5 pts; reversed when unliked/removed; validated to prevent unearned points)
+create or replace function public.is_valid_place_vote(
+  p_place_id bigint,
+  p_option_key text,
+  p_choice text
+)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v_place_type text;
+begin
+  if p_place_id is null or p_option_key is null or p_choice is null then
+    return false;
+  end if;
+
+  select type into v_place_type from public.places where id = p_place_id;
+  if v_place_type is null then
+    return false;
+  end if;
+
+  if p_option_key = 'like' and p_choice = 'liked' then
+    return true;
+  end if;
+
+  if v_place_type = 'classroom' then
+    return (p_option_key = 'outlets' and p_choice in ('none', 'few', 'many'))
+        or (p_option_key = 'projector' and p_choice in ('yes', 'no'))
+        or (p_option_key = 'wheelchair' and p_choice in ('yes', 'no'));
+  elsif v_place_type = 'bathroom' then
+    return (p_option_key = 'gender' and p_choice in ('all_gender', 'single_gender', 'single_stall'))
+        or (p_option_key = 'feminine_products' and p_choice in ('yes', 'no'))
+        or (p_option_key = 'cleanliness' and p_choice in ('clean', 'average', 'needs_cleaning'));
+  elsif v_place_type = 'water_fountain' then
+    return (p_option_key = 'bottle_filler' and p_choice in ('yes', 'no'))
+        or (p_option_key = 'temperature' and p_choice in ('cold', 'room_temp'));
+  end if;
+
+  return false;
+end;
+$$;
+
+create or replace function public.validate_place_vote()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not public.is_valid_place_vote(new.place_id, new.option_key, new.choice) then
+    raise exception 'Invalid vote option "%" or choice "%" for place', new.option_key, new.choice;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger trg_validate_place_vote
+before insert or update on public.place_votes
+for each row
+execute function public.validate_place_vote();
+
 create or replace function public.on_vote_created_award_points()
 returns trigger
 language plpgsql
@@ -190,6 +253,10 @@ security definer
 set search_path = ''
 as $$
 begin
+  if not public.is_valid_place_vote(new.place_id, new.option_key, new.choice) then
+    raise exception 'Invalid vote option "%" or choice "%" for place', new.option_key, new.choice;
+  end if;
+
   insert into public.user_points (user_id, points, category, description, reference_type, reference_id, created_at)
   values (new.user_id, 5, 'add_vote', 'Voted on place feature: ' || new.option_key, 'vote', new.place_id::text || ':' || new.option_key, new.updated_at)
   on conflict (user_id, reference_type, reference_id) do nothing;
@@ -242,6 +309,7 @@ on conflict (user_id, reference_type, reference_id) do nothing;
 insert into public.user_points (user_id, points, category, description, reference_type, reference_id, created_at)
 select user_id, 5, 'add_vote', 'Voted on place feature: ' || option_key, 'vote', place_id::text || ':' || option_key, updated_at
 from public.place_votes
+where public.is_valid_place_vote(place_id, option_key, choice)
 on conflict (user_id, reference_type, reference_id) do nothing;
 
 -- 5. Leaderboard View

@@ -230,6 +230,72 @@ test("US-3.2-T-1 contributions award points via triggers and reverse points when
   assert.equal(Number(afterPlaceDelete[0].count), 0);
 });
 
+test("US-3.2-T-1 rejects invented or invalid vote options and choices and awards no unearned points", async () => {
+  await asUser(alice);
+  const { rows: placeRows } = await db.query(
+    "insert into public.places (name, type, latitude, longitude) values ('McHenry Study Room', 'classroom', 36.995, -122.059) returning id",
+  );
+  const placeId = placeRows[0].id;
+
+  // Alice attempts to submit an invented option name to generate unearned points
+  await assert.rejects(
+    db.query(
+      "insert into public.place_votes (place_id, option_key, choice) values ($1, 'nonexistent_option', 'fake_choice')",
+      [placeId],
+    ),
+    /Invalid vote option/,
+  );
+
+  // Alice attempts to submit an invalid choice for a valid option
+  await assert.rejects(
+    db.query(
+      "insert into public.place_votes (place_id, option_key, choice) values ($1, 'outlets', 'infinite')",
+      [placeId],
+    ),
+    /Invalid vote option/,
+  );
+
+  // Alice attempts to submit a vote option for the wrong place type (e.g. bathroom options for a classroom)
+  await assert.rejects(
+    db.query(
+      "insert into public.place_votes (place_id, option_key, choice) values ($1, 'gender', 'all_gender')",
+      [placeId],
+    ),
+    /Invalid vote option/,
+  );
+
+  // Confirm no points were awarded for the rejected attempts
+  const { rows: pointRows } = await db.query(
+    "select * from public.user_points where user_id = $1 and reference_type = 'vote'",
+    [alice],
+  );
+  assert.equal(pointRows.length, 0);
+
+  // Valid feature vote succeeds and awards points
+  await db.query(
+    "insert into public.place_votes (place_id, option_key, choice) values ($1, 'outlets', 'many')",
+    [placeId],
+  );
+  const { rows: validFeaturePoints } = await db.query(
+    "select * from public.user_points where user_id = $1 and reference_id = $2",
+    [alice, `${placeId}:outlets`],
+  );
+  assert.equal(validFeaturePoints.length, 1);
+  assert.equal(validFeaturePoints[0].points, 5);
+
+  // Valid like vote succeeds and awards points
+  await db.query(
+    "insert into public.place_votes (place_id, option_key, choice) values ($1, 'like', 'liked')",
+    [placeId],
+  );
+  const { rows: validLikePoints } = await db.query(
+    "select * from public.user_points where user_id = $1 and reference_id = $2",
+    [alice, `${placeId}:like`],
+  );
+  assert.equal(validLikePoints.length, 1);
+  assert.equal(validLikePoints[0].points, 5);
+});
+
 test("US-3.2-T-1 get_leaderboard returns ranked contributors with display names and anonymous slugs", async () => {
   // Alice sets display name
   await asUser(alice);

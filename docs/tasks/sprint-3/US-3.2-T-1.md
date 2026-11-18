@@ -27,7 +27,7 @@ Out of scope: redeeming points for rewards or prizes; seasonal or weekly leaderb
     - `places`: +50 points on insert (`add_place`), -50 points on delete.
     - `place_photos`: +20 points on insert (`add_photo`), -20 points on delete.
     - `place_comments`: +10 points on insert (`add_comment`), -10 points on delete.
-    - `place_votes`: +5 points on insert (`add_vote`), -5 points on delete (unliking removes credit; prevents infinite point farming).
+    - `place_votes`: +5 points on insert (`add_vote`), -5 points on delete (unliking removes credit; prevents infinite point farming). Votes are validated against allowed options and choices for the place's type (or global `like:liked`) via `is_valid_place_vote()` and `trg_validate_place_vote`; invalid or invented vote options/choices are rejected in the database and award no points.
   - View `public.leaderboard_view`: computes `dense_rank() over (order by total_points desc, contributions_count desc, user_id asc)`, joins `display_name`, and falls back to deterministic anonymous slugs `Slug <first-4-hex-of-user-id>`.
   - RPC function `public.get_leaderboard(limit_count integer default 50)`: returns table of `{ rank, user_id, display_name, total_points, contributions_count }`. Only callable by authenticated users and service_role.
   - RPC function `public.get_user_rank(target_user_id uuid default auth.uid())`: returns the target student's rank, display name/slug, total points, and contributions count. If the student has zero contributions, returns `rank: null`, `total_points: 0`, and `contributions_count: 0`.
@@ -56,7 +56,7 @@ Out of scope: redeeming points for rewards or prizes; seasonal or weekly leaderb
 - Existing tests and bundling (`npm run check:scripts` and `expo export`) must keep passing.
 
 ## Acceptance criteria
-1. Adding a campus place, photo, comment, or vote automatically awards points to the user via database triggers; deleting a contribution (such as unliking or deleting a comment/photo/place) reverses the points; direct client-side point insertion is denied; and signed-out requests cannot read points or profiles.
+1. Adding a campus place, photo, comment, or valid vote automatically awards points to the user via database triggers; deleting a contribution (such as unliking or deleting a comment/photo/place) reverses the points; invented or invalid vote options/choices are rejected in the database and award no unearned points; direct client-side point insertion is denied; and signed-out requests cannot read points or profiles.
 2. `public.get_leaderboard` returns contributors ordered by rank ascending and total points descending, using display names when set and anonymous slugs otherwise.
 3. `public.get_user_rank` returns the current user's rank and point totals, or `rank: null` and 0 points if unranked.
 4. The Leaderboard UI screen displays the student's standing banner, ranked list of contributors, and marks the current student with a `You` badge and highlight.

@@ -8,6 +8,9 @@ drop trigger if exists trg_vote_points_delete on public.place_votes;
 drop function if exists public.on_vote_deleted_remove_points();
 drop trigger if exists trg_vote_points on public.place_votes;
 drop function if exists public.on_vote_created_award_points();
+drop trigger if exists trg_validate_place_vote on public.place_votes;
+drop function if exists public.validate_place_vote();
+drop function if exists public.is_valid_place_vote(bigint, text, text);
 
 drop trigger if exists trg_comment_points_delete on public.place_comments;
 drop function if exists public.on_comment_deleted_remove_points();
