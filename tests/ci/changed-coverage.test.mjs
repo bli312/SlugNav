@@ -117,3 +117,28 @@ test("merges repeated line records without double-counting covered lines", () =>
     ],
   );
 });
+
+const placeholder = `SF:${file}
+FN:1,(empty-report)
+DA:1,0
+DA:2,0
+DA:3,0
+end_of_record
+`;
+
+test("uses measured lines instead of c8 placeholders in either report order", () => {
+  const measured = `SF:${file}\nDA:2,1\nDA:3,0\nend_of_record\n`;
+  for (const report of [placeholder + measured, measured + placeholder]) {
+    assert.deepEqual(
+      checkChangedCoverage(parseCoverage(report), additions([1, 2, 3])),
+      { covered: 1, total: 2, passed: false },
+    );
+  }
+});
+
+test("keeps files uncovered when only a c8 placeholder is available", () => {
+  assert.deepEqual(
+    checkChangedCoverage(parseCoverage(placeholder), additions([1, 2, 3])),
+    { covered: 0, total: 3, passed: false },
+  );
+});
