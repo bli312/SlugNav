@@ -87,7 +87,10 @@ export default function PlaceMap({
         <>
           {savedMarkers && (
             <View style={styles.savedRow}>
-              <Text style={styles.confirmation} accessibilityLiveRegion="polite">
+              <Text
+                style={styles.confirmation}
+                accessibilityLiveRegion="polite"
+              >
                 Place added.
               </Text>
               {savedPlace && (

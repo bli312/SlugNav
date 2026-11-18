@@ -50,8 +50,7 @@ export async function getLeaderboard(
       rank: Number(row.rank),
       userId: String(row.user_id),
       displayName:
-        String(row.display_name || "") ||
-        getAnonymousSlug(String(row.user_id)),
+        String(row.display_name || "") || getAnonymousSlug(String(row.user_id)),
       totalPoints: Number(row.total_points ?? 0),
       contributionsCount: Number(row.contributions_count ?? 0),
     }));
@@ -61,8 +60,7 @@ export async function getLeaderboard(
     rank: Number(row.rank),
     userId: String(row.user_id),
     displayName:
-      String(row.display_name || "") ||
-      getAnonymousSlug(String(row.user_id)),
+      String(row.display_name || "") || getAnonymousSlug(String(row.user_id)),
     totalPoints: Number(row.total_points ?? 0),
     contributionsCount: Number(row.contributions_count ?? 0),
   }));
@@ -96,8 +94,7 @@ export async function getUserRank(
     rank: row.rank != null ? Number(row.rank) : null,
     userId: String(row.user_id),
     displayName:
-      String(row.display_name || "") ||
-      getAnonymousSlug(String(row.user_id)),
+      String(row.display_name || "") || getAnonymousSlug(String(row.user_id)),
     totalPoints: Number(row.total_points ?? 0),
     contributionsCount: Number(row.contributions_count ?? 0),
   };

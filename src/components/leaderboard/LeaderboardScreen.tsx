@@ -131,7 +131,9 @@ export default function LeaderboardScreen() {
             </View>
             <View style={styles.userRankPill}>
               <Text style={styles.userRankText}>
-                {userRank.rank != null ? renderRankBadge(userRank.rank) : "Unranked"}
+                {userRank.rank != null
+                  ? renderRankBadge(userRank.rank)
+                  : "Unranked"}
               </Text>
             </View>
           </View>
@@ -202,7 +204,9 @@ export default function LeaderboardScreen() {
               onPress={() => setIsEditingName(true)}
               style={styles.editNameButton}
             >
-              <Text style={styles.editNameButtonText}>✏️ Edit Display Name</Text>
+              <Text style={styles.editNameButtonText}>
+                ✏️ Edit Display Name
+              </Text>
             </Pressable>
           )}
         </View>
