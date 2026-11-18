@@ -24,6 +24,7 @@ import {
   type ReportReason,
 } from "./feedback";
 import { placeTypes, type Place } from "./places";
+import { PointsToastView, usePointsToast } from "../leaderboard/PointsToast";
 
 interface PlaceFeedbackModalProps {
   place: Place | null;
@@ -38,6 +39,13 @@ export default function PlaceFeedbackModal({
 }: PlaceFeedbackModalProps) {
   const auth = useOptionalAuth();
   const userId = auth?.session?.user?.id;
+  const { showPointsToast, registerModal } = usePointsToast();
+
+  useEffect(() => {
+    if (visible) {
+      return registerModal();
+    }
+  }, [visible, registerModal]);
 
   const [feedback, setFeedback] = useState<PlaceFeedback | null>(null);
   const [loading, setLoading] = useState(false);
@@ -96,6 +104,7 @@ export default function PlaceFeedbackModal({
         await deleteVote(getSupabase(), place.id, "like");
       } else {
         await castVote(getSupabase(), place.id, "like", "liked");
+        showPointsToast(5, "Liked this location");
       }
       const updated = await getPlaceFeedback(getSupabase(), place.id, userId);
       setFeedback(updated);
@@ -106,8 +115,12 @@ export default function PlaceFeedbackModal({
 
   async function handleVote(optionKey: string, choiceValue: string) {
     if (!place) return;
+    const hadPriorVote = Boolean(feedback?.votes[optionKey]?.userChoice);
     try {
       await castVote(getSupabase(), place.id, optionKey, choiceValue);
+      if (!hadPriorVote) {
+        showPointsToast(5, `Voted on ${optionKey}`);
+      }
       // Refresh feedback to reflect updated counts
       const updated = await getPlaceFeedback(getSupabase(), place.id, userId);
       setFeedback(updated);
@@ -122,6 +135,7 @@ export default function PlaceFeedbackModal({
     setError(null);
     try {
       const newComment = await postComment(getSupabase(), place.id, commentText);
+      showPointsToast(10, "Comment posted");
       setCommentText("");
       setFeedback((prev) =>
         prev
@@ -393,6 +407,7 @@ export default function PlaceFeedbackModal({
               </View>
             </ScrollView>
           )}
+          <PointsToastView />
         </View>
       </View>
     </Modal>
@@ -411,6 +426,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 16,
     maxHeight: "85%",
     paddingBottom: 24,
+    position: "relative",
+    overflow: "hidden",
   },
   header: {
     flexDirection: "row",
