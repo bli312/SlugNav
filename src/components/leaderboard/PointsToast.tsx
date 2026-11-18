@@ -37,7 +37,7 @@ export function PointsToastProvider({
   } | null>(null);
 
   const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(-20)).current;
+  const scale = useRef(new Animated.Value(0.5)).current;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const hidePointsToast = useCallback(() => {
@@ -51,15 +51,15 @@ export function PointsToastProvider({
         duration: 180,
         useNativeDriver: true,
       }),
-      Animated.timing(translateY, {
-        toValue: -20,
+      Animated.timing(scale, {
+        toValue: 0.8,
         duration: 180,
         useNativeDriver: true,
       }),
     ]).start(() => {
       setToast(null);
     });
-  }, [opacity, translateY]);
+  }, [opacity, scale]);
 
   const showPointsToast = useCallback(
     (points: number, message: string) => {
@@ -70,18 +70,18 @@ export function PointsToastProvider({
 
       setToast({ points, message });
       opacity.setValue(0);
-      translateY.setValue(-20);
+      scale.setValue(0.5);
 
       Animated.parallel([
         Animated.timing(opacity, {
           toValue: 1,
-          duration: 220,
+          duration: 200,
           useNativeDriver: true,
         }),
-        Animated.spring(translateY, {
-          toValue: 0,
+        Animated.spring(scale, {
+          toValue: 1,
           friction: 6,
-          tension: 40,
+          tension: 60,
           useNativeDriver: true,
         }),
       ]).start();
@@ -90,7 +90,7 @@ export function PointsToastProvider({
         hidePointsToast();
       }, autoDismissMs);
     },
-    [autoDismissMs, hidePointsToast, opacity, translateY],
+    [autoDismissMs, hidePointsToast, opacity, scale],
   );
 
   useEffect(() => {
@@ -105,96 +105,105 @@ export function PointsToastProvider({
     <PointsToastContext.Provider value={{ showPointsToast, hidePointsToast }}>
       {children}
       {toast && (
-        <Animated.View
-          style={[
-            styles.toastContainer,
-            {
-              opacity,
-              transform: [{ translateY }],
-            },
-          ]}
-          pointerEvents="box-none"
-        >
-          <Pressable
-            accessibilityRole="alert"
-            accessibilityLiveRegion="polite"
-            accessibilityLabel={`Earned ${toast.points} points. ${toast.message}. Tap to dismiss.`}
-            onPress={hidePointsToast}
-            style={styles.toastCard}
+        <View style={styles.toastOverlay} pointerEvents="box-none">
+          <Animated.View
+            style={[
+              styles.toastContainer,
+              {
+                opacity,
+                transform: [{ scale }],
+              },
+            ]}
           >
-            <View style={styles.badgeContainer}>
-              <Text style={styles.badgeIcon}>🏆</Text>
-            </View>
-            <View style={styles.contentContainer}>
+            <Pressable
+              accessibilityRole="alert"
+              accessibilityLiveRegion="polite"
+              accessibilityLabel={`Earned ${toast.points} points. ${toast.message}. Tap to dismiss.`}
+              onPress={hidePointsToast}
+              style={styles.toastCard}
+            >
+              <View style={styles.iconCircle}>
+                <Text style={styles.badgeIcon}>🎉</Text>
+              </View>
               <Text style={styles.pointsText}>+{toast.points} Points!</Text>
               <Text style={styles.messageText} numberOfLines={2}>
                 {toast.message}
               </Text>
-            </View>
-            <Text style={styles.closeIcon}>✕</Text>
-          </Pressable>
-        </Animated.View>
+              <Text style={styles.dismissHint}>Tap to dismiss</Text>
+            </Pressable>
+          </Animated.View>
+        </View>
       )}
     </PointsToastContext.Provider>
   );
 }
 
 const styles = StyleSheet.create({
-  toastContainer: {
+  toastOverlay: {
     position: "absolute",
-    top: 50,
-    left: 16,
-    right: 16,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
     zIndex: 9999,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  toastContainer: {
+    width: "85%",
+    maxWidth: 360,
     alignItems: "center",
   },
   toastCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#174B35",
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 6,
-    borderWidth: 1,
-    borderColor: "#2E7D32",
-    maxWidth: 500,
     width: "100%",
+    backgroundColor: "#174B35",
+    borderRadius: 24,
+    paddingVertical: 26,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    borderWidth: 2.5,
+    borderColor: "#FFD700",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 12,
   },
-  badgeContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#E8F5E9",
+  iconCircle: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: "rgba(255, 215, 0, 0.2)",
+    borderWidth: 2,
+    borderColor: "#FFD700",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginBottom: 12,
   },
   badgeIcon: {
-    fontSize: 20,
-  },
-  contentContainer: {
-    flex: 1,
+    fontSize: 34,
   },
   pointsText: {
     color: "#FFD700",
-    fontWeight: "800",
-    fontSize: 16,
+    fontWeight: "900",
+    fontSize: 32,
+    letterSpacing: 0.5,
+    textAlign: "center",
   },
   messageText: {
     color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "500",
-    marginTop: 2,
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 6,
+    textAlign: "center",
+    lineHeight: 22,
   },
-  closeIcon: {
-    color: "#E8F5E9",
-    fontSize: 14,
-    marginLeft: 8,
-    opacity: 0.8,
+  dismissHint: {
+    color: "rgba(255, 255, 255, 0.65)",
+    fontSize: 12,
+    marginTop: 14,
+    fontWeight: "500",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
   },
 });
