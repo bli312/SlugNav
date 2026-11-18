@@ -5,12 +5,14 @@ interface SearchbarProps {
   search: string;
   placeholder: string;
   onSearchChange: (text: string) => void;
+  onFocus?: () => void;
 }
 
 export default function Searchbar({
   search,
   placeholder,
   onSearchChange,
+  onFocus,
 }: SearchbarProps) {
   return (
     <TextInput
@@ -21,6 +23,7 @@ export default function Searchbar({
       autoCorrect={false}
       value={search}
       onChangeText={onSearchChange}
+      onFocus={onFocus}
     />
   );
 }
