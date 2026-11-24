@@ -33,6 +33,9 @@ export default function CampusSearch() {
   const [routePlannerVisible, setRoutePlannerVisible] = useState(false);
   const [route, setRoute] = useState<WalkingRoute | null>(null);
   const results = searchResults(classes, places, search, categories);
+  // While searching, results cover the screen; picking one returns to the map.
+  const [resultsOpen, setResultsOpen] = useState(false);
+  const showResults = resultsOpen && Boolean(search.trim());
   const [nearMe, setNearMe] = useState(false);
   const userLocation = useUserLocation(nearMe);
   // Every place of the selected types is pinned on the map. Memoized so the
@@ -52,6 +55,7 @@ export default function CampusSearch() {
 
   function select(place: Place) {
     Keyboard.dismiss();
+    setResultsOpen(false);
     setSelectedPlace(place);
     setMarkers([
       {
@@ -73,6 +77,7 @@ export default function CampusSearch() {
       }
       onPlaceAdded={addPlace}
       route={route?.geometry ?? null}
+      mapHidden={showResults && !routePlannerVisible}
     >
       {routePlannerVisible ? (
         <RoutePlanner
@@ -93,9 +98,11 @@ export default function CampusSearch() {
               placeholder="Search classes and places"
               onSearchChange={(value) => {
                 setSearch(value);
+                setResultsOpen(true);
                 setMarkers([]);
                 setSelectedPlace(null);
               }}
+              onFocus={() => setResultsOpen(true)}
             />
             <SearchFilters
               selected={categories}
@@ -120,16 +127,39 @@ export default function CampusSearch() {
               onSelect={select}
             />
           )}
-          {Boolean(search.trim()) &&
-            (loading ? (
-              <Text style={styles.message}>Loading search results…</Text>
-            ) : error ? (
-              <Text accessibilityRole="alert" style={styles.error}>
-                {error}
-              </Text>
-            ) : (
-              <FlatListSearch results={results} onSelect={select} />
-            ))}
+          {showResults && (
+            <View style={styles.results}>
+              <View style={styles.resultsHeader}>
+                <Text style={styles.message}>
+                  {loading || error
+                    ? "Search results"
+                    : `${results.length} ${results.length === 1 ? "result" : "results"}`}
+                </Text>
+                <Button
+                  title="Back to map"
+                  color="#174B35"
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setResultsOpen(false);
+                  }}
+                />
+              </View>
+              {loading ? (
+                <Text style={styles.message}>Loading search results…</Text>
+              ) : error ? (
+                <Text accessibilityRole="alert" style={styles.error}>
+                  {error}
+                </Text>
+              ) : (
+                <FlatListSearch
+                  results={results}
+                  onSelect={select}
+                  fullScreen
+                  actionLabel="Show on map"
+                />
+              )}
+            </View>
+          )}
           {selectedPlace && (
             <SelectedPlaceCard
               place={selectedPlace}
@@ -149,6 +179,14 @@ export default function CampusSearch() {
 
 const styles = StyleSheet.create({
   controls: { padding: 12, gap: 8 },
-  message: { color: "#526259" },
+  message: { color: "#526259", paddingHorizontal: 12 },
   error: { color: "#A12828", paddingHorizontal: 12 },
+  results: { flex: 1 },
+  resultsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingRight: 12,
+    paddingBottom: 8,
+  },
 });

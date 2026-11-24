@@ -23,6 +23,9 @@ type Props = {
   pins?: Marker[];
   userLocation?: MapLocation | null;
   route?: WalkingRoute["geometry"] | null;
+  // Hides the map (and Add place) so children can fill the screen, such as
+  // full-screen search results. The map stays loaded, so it doesn't reload.
+  mapHidden?: boolean;
   onPlaceAdded?: (place: Place) => void;
   children?: React.ReactNode;
 };
@@ -32,6 +35,7 @@ export default function PlaceMap({
   pins,
   userLocation,
   route,
+  mapHidden = false,
   onPlaceAdded,
   children,
 }: Props) {
@@ -70,14 +74,19 @@ export default function PlaceMap({
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       {!adding && children}
-      <LeafletDisplay
-        markers={savedMarkers ?? markers}
-        onLocationSelect={adding ? setLocation : undefined}
-        pins={pins}
-        userLocation={userLocation}
-        route={route}
-      />
-      {adding ? (
+      <View
+        testID="map-area"
+        style={mapHidden ? styles.hidden : styles.mapArea}
+      >
+        <LeafletDisplay
+          markers={savedMarkers ?? markers}
+          onLocationSelect={adding ? setLocation : undefined}
+          pins={pins}
+          userLocation={userLocation}
+          route={route}
+        />
+      </View>
+      {mapHidden ? null : adding ? (
         <AddPlaceForm
           location={location}
           onSaved={finish}
@@ -125,6 +134,8 @@ export default function PlaceMap({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  mapArea: { flex: 1 },
+  hidden: { display: "none" },
   savedRow: {
     flexDirection: "row",
     alignItems: "center",
