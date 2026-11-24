@@ -1,13 +1,10 @@
 {
   "compilerOptions": {
     "strict": true,
-    "allowImportingTsExtensions": true,
     "jsx": "react",
     "skipLibCheck": true,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
@@ -15,11 +12,5 @@
     "src/**/*.tsx",
     "supabase/functions/**/handler.ts"
   ],
-  "exclude": [
-    "**/*.md",
-    "node_modules",
-    ".husky",
-    ".vscode"
-  ],
-  "extends": "expo/tsconfig.base"
+  "exclude": ["**/*.md", "node_modules", ".husky", ".vscode"]
 }
