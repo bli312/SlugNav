@@ -22,9 +22,7 @@ export default function AccountHeader({
   return (
     <View style={styles.header}>
       <View style={styles.identity}>
-        <Text accessibilityRole="header" style={styles.title}>
-          SlugNav
-        </Text>
+        <Text style={styles.title}>SlugNav</Text>
         <Text numberOfLines={1}>{userEmail}</Text>
       </View>
       <View style={styles.sandwich}>

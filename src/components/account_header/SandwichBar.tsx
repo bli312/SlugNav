@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { StyleSheet, View, Animated, Easing } from "react-native";
 import { MaterialDesignIcons as Icon } from "@react-native-vector-icons/material-design-icons";
 
 import SandwichIcons from "./SandwichIcons";
@@ -27,15 +27,58 @@ export default function SandwichBar({
   onNavigateLeaderboard,
 }: SandwichBarProps) {
   const [open, setOpen] = useState(false);
+  const animation = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(animation, {
+      toValue: open ? 1 : 0,
+      duration: 250,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  }, [open, animation]);
+
   const iconStyles: IconStyleSheet = {
     size: 37.5,
-    color: "#777",
+    color: "#555",
   };
+
+  const translateX = animation.interpolate({
+      inputRange: [0, 1],
+      outputRange: [50, 0],
+    }),
+    rotate = animation.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["0deg", "-180deg"],
+    }),
+    barWidth = animation.interpolate({
+      inputRange: [0, 1],
+      outputRange: [47.5, 240],
+    });
 
   return (
     <View style={styles.container}>
-      <View style={styles.bar}>
-        {open && (
+      <Animated.View
+        style={[
+          styles.bar,
+          {
+            width: barWidth,
+          },
+        ]}
+      >
+        <Animated.View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+            opacity: animation,
+            transform: [{ translateX }],
+          }}
+          pointerEvents={open ? "auto" : "none"}
+          accessible={open}
+          accessibilityElementsHidden={!open}
+          importantForAccessibility={open ? "auto" : "no-hide-descendants"}
+        >
           <SandwichIcons
             busy={busy}
             setOpen={setOpen}
@@ -45,19 +88,23 @@ export default function SandwichBar({
             onNavigateFeedbackReports={onNavigateFeedbackReports}
             onNavigateLeaderboard={onNavigateLeaderboard}
           />
-        )}
-        <Icon
-          name={
-            !open ? "account-circle-outline" : "arrow-right-drop-circle-outline"
-          }
-          size={iconStyles.size}
-          color="#555"
-          accessible={true}
-          accessibilityRole="button"
-          accessibilityLabel="Toggle Sandwich"
-          onPress={() => setOpen((prevState) => !prevState)}
-        />
-      </View>
+        </Animated.View>
+        <Animated.View style={{ transform: [{ rotate }] }}>
+          <Icon
+            name={
+              !open
+                ? "account-circle-outline"
+                : "arrow-left-drop-circle-outline"
+            }
+            size={iconStyles.size}
+            color="#0084ff"
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Toggle Sandwich"
+            onPress={() => setOpen((prev) => !prev)}
+          />
+        </Animated.View>
+      </Animated.View>
     </View>
   );
 }
@@ -73,10 +120,12 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "flex-end",
     gap: 10,
     backgroundColor: "white",
     padding: 5,
     borderRadius: 8,
     elevation: 5,
+    overflow: "hidden",
   },
 });
