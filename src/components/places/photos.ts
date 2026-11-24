@@ -49,46 +49,78 @@ function randomId(): string {
   );
 }
 
+async function signedInUserId(client: SupabaseClient): Promise<string> {
+  const {
+    data: { session },
+  } = await client.auth.getSession();
+  if (!session?.user.id) throw new Error("Sign in to add photos.");
+  return session.user.id;
+}
+
+// Checks the photo before anything is uploaded; returns its file extension.
+function photoExtension(photo: PhotoFile): string {
+  const extension = photoExtensions[photo.contentType];
+  if (!extension) throw new Error("Use a JPEG, PNG, or WebP photo.");
+  if (photo.data.byteLength > MAX_PHOTO_BYTES)
+    throw new Error("Photos must be 5 MB or smaller.");
+  return extension;
+}
+
+type PhotoBucket = ReturnType<SupabaseClient["storage"]["from"]>;
+
+async function uploadFile(
+  bucket: PhotoBucket,
+  storagePath: string,
+  photo: PhotoFile,
+): Promise<void> {
+  const { error } = await bucket.upload(storagePath, photo.data, {
+    contentType: photo.contentType,
+    upsert: false,
+  });
+  if (error) throw new Error("Could not upload the photo. Please try again.");
+}
+
+// Saves the photo's row. If that fails, removes the already-uploaded file so
+// no file is left behind without a row.
+async function savePhotoRow(
+  client: SupabaseClient,
+  bucket: PhotoBucket,
+  row: Pick<PhotoRow, "place_id" | "user_id" | "storage_path">,
+): Promise<PhotoRow> {
+  const { data, error } = await client
+    .from("place_photos")
+    .insert(row)
+    .select(photoColumns)
+    .single();
+  if (error || !data) {
+    await bucket.remove([row.storage_path]);
+    throw new Error("Could not save the photo. Please try again.");
+  }
+  return data as PhotoRow;
+}
+
 // Uploads the file to <user id>/<place id>/<random id>.<extension>, then saves
-// its row. If the row can't be saved, the file is removed so none is left behind.
+// its row, and returns the photo with a signed URL.
 export async function uploadPlacePhoto(
   client: SupabaseClient,
   placeId: number,
   photo: PhotoFile,
 ): Promise<PlacePhoto> {
-  const {
-    data: { session },
-  } = await client.auth.getSession();
-  const userId = session?.user.id;
-  if (!userId) throw new Error("Sign in to add photos.");
-  const extension = photoExtensions[photo.contentType];
-  if (!extension) throw new Error("Use a JPEG, PNG, or WebP photo.");
-  if (photo.data.byteLength > MAX_PHOTO_BYTES)
-    throw new Error("Photos must be 5 MB or smaller.");
-
+  const userId = await signedInUserId(client);
+  const extension = photoExtension(photo);
   const storagePath = `${userId}/${placeId}/${randomId()}.${extension}`;
   const bucket = client.storage.from(PLACE_PHOTOS_BUCKET);
-  const { error: uploadError } = await bucket.upload(storagePath, photo.data, {
-    contentType: photo.contentType,
-    upsert: false,
+  await uploadFile(bucket, storagePath, photo);
+  const row = await savePhotoRow(client, bucket, {
+    place_id: placeId,
+    user_id: userId,
+    storage_path: storagePath,
   });
-  if (uploadError)
-    throw new Error("Could not upload the photo. Please try again.");
-
-  const { data, error } = await client
-    .from("place_photos")
-    .insert({ place_id: placeId, user_id: userId, storage_path: storagePath })
-    .select(photoColumns)
-    .single();
-  if (error || !data) {
-    await bucket.remove([storagePath]);
-    throw new Error("Could not save the photo. Please try again.");
-  }
   const { data: signed } = await bucket.createSignedUrl(
     storagePath,
     SIGNED_URL_SECONDS,
   );
-  return toPhoto(data as PhotoRow, signed?.signedUrl ?? "");
+  return toPhoto(row, signed?.signedUrl ?? "");
 }
 
 // A place's photos, newest first, each with a signed URL valid for one hour.
