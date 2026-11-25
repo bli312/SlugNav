@@ -25,7 +25,8 @@ export default function AccountHeader({
     <View style={styles.header}>
       <View style={styles.identity}>
         <Text style={styles.title}>SlugNav</Text>
-        <Text numberOfLines={1}>{userEmail}</Text>
+        <Text style={styles.email}
+          numberOfLines={1}>{userEmail}</Text>
       </View>
       <View style={styles.sandwich}>
         <SandwichBar
@@ -48,14 +49,19 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 1,
     padding: 16,
+    paddingTop: 12,
+    paddingBottom: 0,
   },
   identity: {
     flex: 1,
     gap: 2,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
+  },
+  email: {
+    fontSize: 12.5,
   },
   sandwich: {
     alignItems: "center",

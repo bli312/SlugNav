@@ -41,7 +41,7 @@ export default function SandwichBar({
   }, [open, animation]);
 
   const iconStyles: IconStyleSheet = {
-    size: 37.5,
+    size: 32.5,
     color: "#555",
   };
 
@@ -55,7 +55,7 @@ export default function SandwichBar({
     }),
     barWidth = animation.interpolate({
       inputRange: [0, 1],
-      outputRange: [47.5, 240],
+      outputRange: [42.5, 250],
     });
 
   return (
@@ -115,7 +115,7 @@ export default function SandwichBar({
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: -25,
+    top: -20,
     right: 0,
     zIndex: 1000,
     overflow: "visible",
@@ -124,8 +124,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
-    gap: 10,
-    backgroundColor: "white",
+    gap: 5,
+    backgroundColor: "#fffefb",
     padding: 5,
     borderRadius: 8,
     elevation: 5,
