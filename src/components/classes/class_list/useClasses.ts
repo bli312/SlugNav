@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
+import { useReminders } from "@/providers/reminder-provider";
 import {
   createManualClass,
   getClasses,
@@ -9,6 +10,7 @@ import {
 import type { ManualClassDraft, Class } from "./types.ts";
 
 export default function useClasses(userId: string) {
+  const { refresh: refreshReminders } = useReminders();
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +50,7 @@ export default function useClasses(userId: string) {
               entry.id === item.id ? { ...entry, saved: !remove } : entry,
             ),
       );
+      void refreshReminders();
     } catch {
       setError(
         `Could not ${remove ? "remove" : "save"} the class. Please try again.`,
@@ -62,6 +65,7 @@ export default function useClasses(userId: string) {
     const item = await createManualClass(getSupabase(), draft);
     setClasses((current) => [item, ...current]);
     setError(null);
+    void refreshReminders();
   }
 
   return { classes, loading, error, pendingId, updateClass, addManualClass };

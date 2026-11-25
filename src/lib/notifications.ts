@@ -1,7 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
-const channelId = "reminders";
+export const channelId = "reminders";
 
 function hasPermission(
   permission: Notifications.NotificationPermissionsStatus,
@@ -12,10 +12,7 @@ function hasPermission(
   );
 }
 
-export async function sendNotification(
-  title: string,
-  body: string,
-): Promise<string | null> {
+export async function prepareNotifications() {
   if (Platform.OS === "web") {
     throw new Error("Notifications are only supported on iOS and Android.");
   }
@@ -28,14 +25,6 @@ export async function sendNotification(
     });
   }
 
-  let permission = await Notifications.getPermissionsAsync();
-  if (!hasPermission(permission) && permission.canAskAgain) {
-    permission = await Notifications.requestPermissionsAsync({
-      ios: { allowAlert: true, allowSound: true, allowBadge: false },
-    });
-  }
-  if (!hasPermission(permission)) return null;
-
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowBanner: true,
@@ -44,6 +33,24 @@ export async function sendNotification(
       shouldSetBadge: false,
     }),
   });
+}
+
+export async function notificationPermission(ask: boolean): Promise<boolean> {
+  let permission = await Notifications.getPermissionsAsync();
+  if (ask && !hasPermission(permission) && permission.canAskAgain) {
+    permission = await Notifications.requestPermissionsAsync({
+      ios: { allowAlert: true, allowSound: true, allowBadge: false },
+    });
+  }
+  return hasPermission(permission);
+}
+
+export async function sendNotification(
+  title: string,
+  body: string,
+): Promise<string | null> {
+  await prepareNotifications();
+  if (!(await notificationPermission(true))) return null;
 
   return Notifications.scheduleNotificationAsync({
     content: { title, body, sound: "default" },

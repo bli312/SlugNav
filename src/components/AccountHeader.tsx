@@ -8,6 +8,7 @@ interface AccountHeaderProps {
   onNavigateClasses: () => void;
   onNavigateFeedbackReports?: () => void;
   onNavigateLeaderboard?: () => void;
+  onNavigateSettings?: () => void;
 }
 
 export default function AccountHeader({
@@ -17,6 +18,7 @@ export default function AccountHeader({
   onNavigateClasses,
   onNavigateFeedbackReports,
   onNavigateLeaderboard,
+  onNavigateSettings,
 }: AccountHeaderProps) {
   return (
     <View style={styles.account}>
@@ -36,6 +38,9 @@ export default function AccountHeader({
         />
       )}
       <Button title="Classes" onPress={onNavigateClasses} />
+      {onNavigateSettings && (
+        <Button title="Settings" onPress={onNavigateSettings} />
+      )}
       <Button title="Sign Out" disabled={busy} onPress={onSignOut} />
     </View>
   );

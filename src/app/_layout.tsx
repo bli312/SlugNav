@@ -6,13 +6,16 @@ import React from "react";
 import { useSupabaseAutoRefresh } from "@/hooks/use-supabase-auto-refresh";
 import { AuthProvider, useAuth } from "@/providers/auth-provider";
 import { PointsToastProvider } from "@/components/leaderboard/PointsToast";
+import { ReminderProvider } from "@/providers/reminder-provider";
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <PointsToastProvider>
-        <RootNavigator />
-      </PointsToastProvider>
+      <ReminderProvider>
+        <PointsToastProvider>
+          <RootNavigator />
+        </PointsToastProvider>
+      </ReminderProvider>
     </AuthProvider>
   );
 }
@@ -47,6 +50,7 @@ function RootNavigator() {
           <Stack.Screen name="classes" />
           <Stack.Screen name="feedback-reports" />
           <Stack.Screen name="leaderboard" />
+          <Stack.Screen name="settings" />
         </Stack.Protected>
         <Stack.Protected guard={!session}>
           <Stack.Screen name="login" />
