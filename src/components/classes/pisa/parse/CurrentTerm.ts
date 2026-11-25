@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-import { ENDPOINT, TERM_DROPDOWN } from "./PisaElements";
+import { ENDPOINT, TERM_DROPDOWN } from "../PisaElements";
 
 export default async function getCurrentTerm(): Promise<number> {
   const res = await axios.get(ENDPOINT);

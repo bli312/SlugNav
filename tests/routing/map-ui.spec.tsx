@@ -178,7 +178,10 @@ test("US-3.3-T-2 AC2: lets the user choose From and To through search and switch
     ["To", room],
   ] as const) {
     await user.press(screen.getByRole("button", { name: field }));
-    await user.type(screen.getByLabelText("Search classes and places"), "Sample");
+    await user.type(
+      screen.getByLabelText("Search classes and places"),
+      "Sample",
+    );
     expect(screen.getByText(/CSE 101/)).toBeOnTheScreen();
     await user.press(screen.getByText(place.name));
   }

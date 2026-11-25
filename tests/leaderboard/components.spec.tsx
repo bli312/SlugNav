@@ -1,6 +1,11 @@
 import React from "react";
 import { beforeEach, expect, jest, test } from "@jest/globals";
-import { render, screen, userEvent, waitFor } from "@testing-library/react-native";
+import {
+  render,
+  screen,
+  userEvent,
+  waitFor,
+} from "@testing-library/react-native";
 import LeaderboardScreen from "../../src/components/leaderboard/LeaderboardScreen";
 import * as leaderboardApi from "../../src/components/leaderboard/leaderboard";
 
@@ -8,13 +13,15 @@ let mockAuthUser: { id: string } | null = { id: "user-1" };
 
 jest.mock("@/providers/auth-provider", () => ({
   useAuth: () => ({ session: mockAuthUser ? { user: mockAuthUser } : null }),
-  useOptionalAuth: () => ({ session: mockAuthUser ? { user: mockAuthUser } : null }),
+  useOptionalAuth: () => ({
+    session: mockAuthUser ? { user: mockAuthUser } : null,
+  }),
 }));
 jest.mock("@/lib/supabase", () => ({ getSupabase: () => ({}) }));
 jest.mock("../../src/components/leaderboard/leaderboard", () => ({
-  ...jest.requireActual<typeof import("../../src/components/leaderboard/leaderboard")>(
-    "../../src/components/leaderboard/leaderboard",
-  ),
+  ...jest.requireActual<
+    typeof import("../../src/components/leaderboard/leaderboard")
+  >("../../src/components/leaderboard/leaderboard"),
   getLeaderboard: jest.fn(),
   getUserRank: jest.fn(),
   updateDisplayName: jest.fn(),
@@ -117,7 +124,9 @@ test("US-3.2-T-1 allows editing display name and updating on screen", async () =
   });
 
   // Click edit display name
-  await user.press(screen.getByRole("button", { name: "Change your display name" }));
+  await user.press(
+    screen.getByRole("button", { name: "Change your display name" }),
+  );
 
   const input = screen.getByLabelText("Enter display name");
   expect(input).toBeOnTheScreen();
@@ -153,7 +162,9 @@ test("US-3.2-T-1 handles cancel and error when editing display name", async () =
     expect(screen.getByText("✏️ Edit Display Name")).toBeOnTheScreen();
   });
 
-  await user.press(screen.getByRole("button", { name: "Change your display name" }));
+  await user.press(
+    screen.getByRole("button", { name: "Change your display name" }),
+  );
   const input = screen.getByLabelText("Enter display name");
   await user.type(input, "Something");
 
@@ -195,7 +206,9 @@ test("US-3.2-T-1 displays empty state when there are no contributors yet", async
 
 test("US-3.2-T-1 displays error and allows retrying fetch", async () => {
   const user = userEvent.setup();
-  api.getLeaderboard.mockRejectedValueOnce(new Error("Network connection lost."));
+  api.getLeaderboard.mockRejectedValueOnce(
+    new Error("Network connection lost."),
+  );
 
   await render(<LeaderboardScreen />);
 
