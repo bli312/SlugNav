@@ -14,25 +14,34 @@ type Props = {
   photos: PlacePhoto[];
   placeName: string;
   userId?: string;
+  onOpen: (index: number) => void;
   onDelete: (photo: PlacePhoto) => void;
 };
 
-// A sideways-scrolling row of a place's photos; your own photos get Delete.
+// A sideways-scrolling row of a place's photos. Tapping one opens it full
+// screen; your own photos also get Delete.
 export default function PhotoThumbnails({
   photos,
   placeName,
   userId,
+  onOpen,
   onDelete,
 }: Props) {
   return (
     <ScrollView horizontal contentContainerStyle={styles.photos}>
-      {photos.map((photo) => (
+      {photos.map((photo, index) => (
         <View key={photo.id} style={styles.photo}>
-          <Image
-            accessibilityLabel={`Photo of ${placeName}`}
-            source={{ uri: photo.url }}
-            style={styles.image}
-          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Open photo ${index + 1} of ${photos.length}`}
+            onPress={() => onOpen(index)}
+          >
+            <Image
+              accessibilityLabel={`Photo of ${placeName}`}
+              source={{ uri: photo.url }}
+              style={styles.image}
+            />
+          </Pressable>
           {photo.userId === userId && (
             <Pressable
               accessibilityRole="button"

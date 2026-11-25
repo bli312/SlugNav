@@ -11,6 +11,7 @@ import {
 } from "./photos";
 import type { Place } from "./places";
 import PhotoThumbnails from "./PhotoThumbnails";
+import PhotoViewer from "./PhotoViewer";
 import { preparePhoto } from "./preparePhoto";
 
 type Props = {
@@ -27,6 +28,8 @@ export default function PlacePhotos({ place, userId, onPhotoAdded }: Props) {
   const [loadError, setLoadError] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  // The photo open full screen, as a position in `photos`; null when closed.
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -115,9 +118,17 @@ export default function PlacePhotos({ place, userId, onPhotoAdded }: Props) {
           photos={photos}
           placeName={place.name}
           userId={userId}
+          onOpen={setOpenIndex}
           onDelete={(photo) => void removePhoto(photo)}
         />
       )}
+      <PhotoViewer
+        photos={photos}
+        index={openIndex}
+        placeName={place.name}
+        onIndexChange={setOpenIndex}
+        onClose={() => setOpenIndex(null)}
+      />
     </View>
   );
 }
