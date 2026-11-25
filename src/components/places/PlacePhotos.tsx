@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
 import { getSupabase } from "@/lib/supabase";
@@ -17,6 +10,7 @@ import {
   type PlacePhoto,
 } from "./photos";
 import type { Place } from "./places";
+import PhotoThumbnails from "./PhotoThumbnails";
 import { preparePhoto } from "./preparePhoto";
 
 type Props = {
@@ -117,27 +111,12 @@ export default function PlacePhotos({ place, userId, onPhotoAdded }: Props) {
           No photos yet. Be the first to add one.
         </Text>
       ) : (
-        <ScrollView horizontal contentContainerStyle={styles.photos}>
-          {photos.map((photo) => (
-            <View key={photo.id} style={styles.photo}>
-              <Image
-                accessibilityLabel={`Photo of ${place.name}`}
-                source={{ uri: photo.url }}
-                style={styles.image}
-              />
-              {photo.userId === userId && (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Delete your photo"
-                  onPress={() => void removePhoto(photo)}
-                  style={styles.deleteButton}
-                >
-                  <Text style={styles.deleteText}>Delete</Text>
-                </Pressable>
-              )}
-            </View>
-          ))}
-        </ScrollView>
+        <PhotoThumbnails
+          photos={photos}
+          placeName={place.name}
+          userId={userId}
+          onDelete={(photo) => void removePhoto(photo)}
+        />
       )}
     </View>
   );
@@ -161,14 +140,4 @@ const styles = StyleSheet.create({
   addButtonText: { color: "#FFFFFF", fontSize: 13, fontWeight: "600" },
   message: { color: "#526259" },
   error: { color: "#A12828" },
-  photos: { gap: 8 },
-  photo: { gap: 4 },
-  image: {
-    width: 120,
-    height: 120,
-    borderRadius: 6,
-    backgroundColor: "#E4E9E5",
-  },
-  deleteButton: { alignSelf: "flex-start" },
-  deleteText: { color: "#A12828", fontSize: 13 },
 });
