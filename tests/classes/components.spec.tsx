@@ -13,6 +13,9 @@ jest.mock("@/providers/auth-provider", () => ({
   useAuth: () => ({ session: { user: { id: "student" } } }),
 }));
 jest.mock("@/lib/supabase", () => ({ getSupabase: () => ({}) }));
+jest.mock("@/providers/reminder-provider", () => ({
+  useReminders: () => ({ refresh: async () => true }),
+}));
 jest.mock("../../src/components/classes/class_list/GetClasses");
 
 const api = jest.mocked(classesApi);
