@@ -49,6 +49,7 @@ function RootNavigator() {
           <Stack.Screen name="index" />
           <Stack.Screen name="classes" />
           <Stack.Screen name="feedback-reports" />
+          <Stack.Screen name="my-photos" />
           <Stack.Screen name="leaderboard" />
           <Stack.Screen name="settings" />
         </Stack.Protected>
