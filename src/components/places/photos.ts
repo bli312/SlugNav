@@ -49,11 +49,14 @@ function randomId(): string {
   );
 }
 
-async function signedInUserId(client: SupabaseClient): Promise<string> {
+async function signedInUserId(
+  client: SupabaseClient,
+  signedOutMessage = "Sign in to add photos.",
+): Promise<string> {
   const {
     data: { session },
   } = await client.auth.getSession();
-  if (!session?.user.id) throw new Error("Sign in to add photos.");
+  if (!session?.user.id) throw new Error(signedOutMessage);
   return session.user.id;
 }
 
@@ -138,6 +141,36 @@ export async function getPlacePhotos(
   if (!rows.length) return [];
   const urls = await signedUrls(client, rows, "Could not load photos.");
   return rows.map((row) => toPhoto(row, urls.get(row.storage_path) ?? ""));
+}
+
+export type MyPhoto = PlacePhoto & { placeName: string };
+
+// The signed-in student's own photos across all places, newest first, each
+// with its place's name and a signed URL valid for one hour.
+export async function getMyPhotos(client: SupabaseClient): Promise<MyPhoto[]> {
+  const userId = await signedInUserId(client, "Sign in to see your photos.");
+  const { data, error } = await client
+    .from("place_photos")
+    .select(`${photoColumns}, places(name)`)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error("Could not load your photos.");
+  const rows = (data ?? []) as Array<PhotoRow & { places: PlaceName }>;
+  if (!rows.length) return [];
+  const urls = await signedUrls(client, rows, "Could not load your photos.");
+  return rows.map((row) => ({
+    ...toPhoto(row, urls.get(row.storage_path) ?? ""),
+    placeName: placeNameOf(row.places),
+  }));
+}
+
+// Supabase returns one place per photo; without generated database types its
+// type says a list, so accept either.
+type PlaceName = { name: string } | { name: string }[] | null;
+
+function placeNameOf(place: PlaceName): string {
+  const first = Array.isArray(place) ? place[0] : place;
+  return first?.name ?? "Unknown place";
 }
 
 // Signed URLs (valid for one hour) for each row's file, keyed by its path.
