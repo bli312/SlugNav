@@ -136,18 +136,24 @@ export async function getPlacePhotos(
   if (error) throw new Error("Could not load photos.");
   const rows = (data ?? []) as PhotoRow[];
   if (!rows.length) return [];
+  const urls = await signedUrls(client, rows, "Could not load photos.");
+  return rows.map((row) => toPhoto(row, urls.get(row.storage_path) ?? ""));
+}
 
-  const { data: signed, error: signError } = await client.storage
+// Signed URLs (valid for one hour) for each row's file, keyed by its path.
+async function signedUrls(
+  client: SupabaseClient,
+  rows: PhotoRow[],
+  errorMessage: string,
+): Promise<Map<string | null, string | null>> {
+  const { data, error } = await client.storage
     .from(PLACE_PHOTOS_BUCKET)
     .createSignedUrls(
       rows.map((row) => row.storage_path),
       SIGNED_URL_SECONDS,
     );
-  if (signError) throw new Error("Could not load photos.");
-  const urls = new Map(
-    (signed ?? []).map((item) => [item.path, item.signedUrl]),
-  );
-  return rows.map((row) => toPhoto(row, urls.get(row.storage_path) ?? ""));
+  if (error) throw new Error(errorMessage);
+  return new Map((data ?? []).map((item) => [item.path, item.signedUrl]));
 }
 
 // Deletes the row first: access rules only let the uploader delete it, so if
