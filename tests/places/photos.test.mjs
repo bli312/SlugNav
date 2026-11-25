@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   deletePlacePhoto,
+  getMyPhotos,
   getPlacePhotos,
   uploadPlacePhoto,
 } from "../../src/components/places/photos.ts";
@@ -210,4 +211,109 @@ test("US-3.1-T-1 deletePlacePhoto deletes the row and the file, and keeps the fi
     message: "Could not delete the photo.",
   });
   assert.deepEqual(notMine.calls.removed, []);
+});
+
+// A fake client for getMyPhotos that records the query it was asked to run.
+function myPhotosClient({ userId = "student-1", rows = [] } = {}) {
+  const query = { columns: null, filters: [], order: null, signedFor: [] };
+  const client = {
+    auth: {
+      getSession: async () => ({
+        data: { session: userId ? { user: { id: userId } } : null },
+      }),
+    },
+    from: (table) => {
+      assert.equal(table, "place_photos");
+      return {
+        select: (columns) => {
+          query.columns = columns;
+          return {
+            eq: (column, value) => {
+              query.filters.push([column, value]);
+              return {
+                order: async (...args) => {
+                  query.order = args;
+                  return { data: rows, error: null };
+                },
+              };
+            },
+          };
+        },
+      };
+    },
+    storage: {
+      from: () => ({
+        createSignedUrls: async (paths, seconds) => {
+          query.signedFor.push(...paths);
+          return {
+            data: paths.map((path) => ({
+              path,
+              signedUrl: `https://signed.test/${path}?expires=${seconds}`,
+            })),
+            error: null,
+          };
+        },
+      }),
+    },
+  };
+  return { client, query };
+}
+
+test("US-4.1-T-1 getMyPhotos returns only your photos, newest first, with place names and 1-hour signed URLs", async () => {
+  const rows = [
+    {
+      id: 5,
+      place_id: 42,
+      user_id: "student-1",
+      storage_path: "student-1/42/new.jpg",
+      created_at: "2026-11-25T02:00:00Z",
+      places: { name: "Sample Fountain" },
+    },
+    {
+      id: 4,
+      place_id: 7,
+      user_id: "student-1",
+      storage_path: "student-1/7/old.jpg",
+      created_at: "2026-11-24T02:00:00Z",
+      places: [{ name: "Sample Room" }],
+    },
+  ];
+  const { client, query } = myPhotosClient({ rows });
+  const photos = await getMyPhotos(client);
+
+  assert.deepEqual(query.filters, [["user_id", "student-1"]]);
+  assert.deepEqual(query.order, ["created_at", { ascending: false }]);
+  assert.match(query.columns, /places\(name\)/);
+  assert.deepEqual(photos, [
+    {
+      id: 5,
+      placeId: 42,
+      userId: "student-1",
+      storagePath: "student-1/42/new.jpg",
+      createdAt: "2026-11-25T02:00:00Z",
+      url: "https://signed.test/student-1/42/new.jpg?expires=3600",
+      placeName: "Sample Fountain",
+    },
+    {
+      id: 4,
+      placeId: 7,
+      userId: "student-1",
+      storagePath: "student-1/7/old.jpg",
+      createdAt: "2026-11-24T02:00:00Z",
+      url: "https://signed.test/student-1/7/old.jpg?expires=3600",
+      placeName: "Sample Room",
+    },
+  ]);
+
+  const none = myPhotosClient({ rows: [] });
+  assert.deepEqual(await getMyPhotos(none.client), []);
+  assert.deepEqual(none.query.signedFor, []);
+});
+
+test("US-4.1-T-1 getMyPhotos rejects when nobody is signed in, without querying", async () => {
+  const { client, query } = myPhotosClient({ userId: null });
+  await assert.rejects(getMyPhotos(client), {
+    message: "Sign in to see your photos.",
+  });
+  assert.equal(query.columns, null);
 });
