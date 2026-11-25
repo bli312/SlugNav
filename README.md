@@ -113,6 +113,31 @@ immediate local notification on iOS or Android. It requests permission when
 needed and returns a notification ID, or `null` if permission is denied. Device
 errors reject the promise. It does not schedule future reminders.
 
+For weekly class reminders, first apply
+[`20261124000000_notification_preferences.sql`](supabase/migrations/20261124000000_notification_preferences.sql)
+to Supabase once. It adds owner-only notification preferences; the matching
+[rollback](supabase/rollbacks/20261124000000_notification_preferences.rollback.sql)
+removes that table and its saved preferences. No Edge Function or server job is needed.
+
+On iOS or Android, open **Settings** from the home screen. Reminders start off,
+with a 30-minute lead time; changes apply with **Save settings**. Enabling asks
+for OS notification permission when needed. Preferences belong to the account;
+each device applies changes on login or when returning to the app. Loading and
+saving preferences requires a connection, but registered weekly reminders do not.
+
+Each meeting weekday has one repeating notification. Rules continue through
+breaks until the schedule/settings change or the account signs out on that device.
+Times follow the phone's local time zone, so use Pacific time for UCSC classes.
+Other devices keep their old rules until their next successful app check. Web
+shows an explanation with disabled notification controls.
+
+Before release, test an installed build on both iOS and Android: save a class
+with a reminder a few minutes away, verify delivery with the app closed, verify
+a future occurrence after reboot without reopening, and disable reminders to
+verify cancellation. Record device/OS versions and results in the PR. Mocked
+tests and export do not verify native delivery; phone settings may delay or
+silence alerts, and powered-off occurrences are not replayed by the app.
+
 ## Useful Terminal Commands
 
 | Command | Purpose |

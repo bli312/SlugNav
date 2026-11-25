@@ -9,6 +9,7 @@ interface AccountHeaderProps {
   onNavigateClasses?: () => void;
   onNavigateFeedbackReports?: () => void;
   onNavigateLeaderboard?: () => void;
+  onNavigateSettings?: () => void;
 }
 
 export default function AccountHeader({
@@ -18,6 +19,7 @@ export default function AccountHeader({
   onNavigateClasses,
   onNavigateFeedbackReports,
   onNavigateLeaderboard,
+  onNavigateSettings,
 }: AccountHeaderProps) {
   return (
     <View style={styles.header}>
@@ -33,7 +35,16 @@ export default function AccountHeader({
           onNavigateFeedbackReports={onNavigateFeedbackReports}
           onNavigateLeaderboard={onNavigateLeaderboard}
         />
+<<<<<<< HEAD:src/components/account_header/AccountHeader.tsx
       </View>
+=======
+      )}
+      <Button title="Classes" onPress={onNavigateClasses} />
+      {onNavigateSettings && (
+        <Button title="Settings" onPress={onNavigateSettings} />
+      )}
+      <Button title="Sign Out" disabled={busy} onPress={onSignOut} />
+>>>>>>> main:src/components/AccountHeader.tsx
     </View>
   );
 }

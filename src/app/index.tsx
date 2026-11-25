@@ -21,6 +21,7 @@ export default function CampusMap() {
         onNavigateClasses={() => router.push("/classes")}
         onNavigateFeedbackReports={() => router.push("/feedback-reports")}
         onNavigateLeaderboard={() => router.push("/leaderboard")}
+        onNavigateSettings={() => router.push("/settings")}
       />
       {error && (
         <Text accessibilityRole="alert" style={styles.error}>
