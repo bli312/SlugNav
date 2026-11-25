@@ -10,6 +10,7 @@ interface SandwichBarProps {
   onNavigateClasses?: () => void;
   onNavigateFeedbackReports?: () => void;
   onNavigateLeaderboard?: () => void;
+  onNavigateSettings?: () => void;
 }
 
 // material design icons does not use react native stylesheet
@@ -25,6 +26,7 @@ export default function SandwichBar({
   onNavigateClasses,
   onNavigateFeedbackReports,
   onNavigateLeaderboard,
+  onNavigateSettings,
 }: SandwichBarProps) {
   const [open, setOpen] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
@@ -87,6 +89,7 @@ export default function SandwichBar({
             onNavigateClasses={onNavigateClasses}
             onNavigateFeedbackReports={onNavigateFeedbackReports}
             onNavigateLeaderboard={onNavigateLeaderboard}
+            onNavigateSettings={onNavigateSettings}
           />
         </Animated.View>
         <Animated.View style={{ transform: [{ rotate }] }}>

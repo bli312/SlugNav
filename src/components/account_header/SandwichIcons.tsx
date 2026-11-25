@@ -12,6 +12,7 @@ interface SandwichIconProps {
   onNavigateClasses?: () => void;
   onNavigateFeedbackReports?: () => void;
   onNavigateLeaderboard?: () => void;
+  onNavigateSettings?: () => void;
 }
 
 export default function SandwichBar({
@@ -22,6 +23,7 @@ export default function SandwichBar({
   onNavigateClasses,
   onNavigateFeedbackReports,
   onNavigateLeaderboard,
+  onNavigateSettings,
 }: SandwichIconProps) {
   return (
     <View style={styles.icons}>
@@ -64,6 +66,20 @@ export default function SandwichBar({
           onPress={() => {
             setOpen(false);
             onNavigateClasses();
+          }}
+        />
+      )}
+      {onNavigateSettings && (
+        <Icon
+          name="cog-outline"
+          size={iconStyles.size}
+          color={iconStyles.color}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Settings"
+          onPress={() => {
+            setOpen(false);
+            onNavigateSettings();
           }}
         />
       )}

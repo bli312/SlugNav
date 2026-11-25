@@ -34,17 +34,9 @@ export default function AccountHeader({
           onNavigateClasses={onNavigateClasses}
           onNavigateFeedbackReports={onNavigateFeedbackReports}
           onNavigateLeaderboard={onNavigateLeaderboard}
+          onNavigateSettings={onNavigateSettings}
         />
-<<<<<<< HEAD:src/components/account_header/AccountHeader.tsx
       </View>
-=======
-      )}
-      <Button title="Classes" onPress={onNavigateClasses} />
-      {onNavigateSettings && (
-        <Button title="Settings" onPress={onNavigateSettings} />
-      )}
-      <Button title="Sign Out" disabled={busy} onPress={onSignOut} />
->>>>>>> main:src/components/AccountHeader.tsx
     </View>
   );
 }
