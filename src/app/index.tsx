@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/providers/auth-provider";
 
-import AccountHeader from "@/components/AccountHeader";
+import AccountHeader from "@/components/account_header/AccountHeader";
 import CampusSearch from "@/components/search/CampusSearch";
 
 export default function CampusMap() {

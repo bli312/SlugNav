@@ -43,9 +43,7 @@ export default function AddPlaceForm({ location, onSaved, onCancel }: Props) {
     <View style={styles.form}>
       <View style={styles.noticeBubble}>
         <Text style={styles.noticeIcon}>ℹ️</Text>
-        <Text style={styles.noticeText}>
-          Creation is for all UCSC users.
-        </Text>
+        <Text style={styles.noticeText}>Creation is for all UCSC users.</Text>
       </View>
 
       <Text>

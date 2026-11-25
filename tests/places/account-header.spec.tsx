@@ -1,7 +1,7 @@
-import React from "react";
 import { expect, jest, test } from "@jest/globals";
 import { render, screen, userEvent } from "@testing-library/react-native";
-import AccountHeader from "../../src/components/AccountHeader";
+
+import AccountHeader from "../../src/components/account_header/AccountHeader";
 
 test("renders Feedback and Report button and handles navigation", async () => {
   const user = userEvent.setup();
@@ -19,26 +19,60 @@ test("renders Feedback and Report button and handles navigation", async () => {
     />,
   );
 
+  // verify header information
   expect(screen.getByText("SlugNav")).toBeOnTheScreen();
   expect(screen.getByText("student@ucsc.edu")).toBeOnTheScreen();
 
-  const feedbackBtn = screen.getByRole("button", {
+  // menu should initially be closed
+  const toggleButton = screen.getByRole("button", {
+    name: "Toggle Sandwich",
+  });
+  expect(toggleButton).toBeOnTheScreen();
+  expect(
+    screen.queryByRole("button", { name: "Feedback and Report" }),
+  ).toBeNull();
+
+  // open sandwich menu
+  await user.press(toggleButton);
+
+  // verify menu options appear
+  const feedbackButton = screen.getByRole("button", {
     name: "Feedback and Report",
   });
-  const classesBtn = screen.getByRole("button", { name: "Classes" });
-  const signOutBtn = screen.getByRole("button", { name: "Sign Out" });
+  const classesButton = screen.getByRole("button", { name: "Classes" });
+  const signOutButton = screen.getByRole("button", { name: "Sign Out" });
 
-  expect(feedbackBtn).toBeOnTheScreen();
-  expect(classesBtn).toBeOnTheScreen();
-  expect(signOutBtn).toBeOnTheScreen();
+  expect(feedbackButton).toBeOnTheScreen();
+  expect(classesButton).toBeOnTheScreen();
+  expect(signOutButton).toBeOnTheScreen();
 
-  await user.press(feedbackBtn);
+  // test feedback navigation
+  await user.press(feedbackButton);
   expect(onNavigateFeedback).toHaveBeenCalledTimes(1);
 
-  await user.press(classesBtn);
+  // menu should close after selection
+  expect(
+    screen.queryByRole("button", { name: "Feedback and Report" }),
+  ).toBeNull();
+
+  // reopen menu before testing another option
+  await user.press(toggleButton);
+
+  const classesButtonAgain = screen.getByRole("button", {
+    name: "Classes",
+  });
+
+  await user.press(classesButtonAgain);
   expect(onNavigateClasses).toHaveBeenCalledTimes(1);
 
-  await user.press(signOutBtn);
+  // reopen menu before testing sign out
+  await user.press(toggleButton);
+
+  const signOutButtonAgain = screen.getByRole("button", {
+    name: "Sign Out",
+  });
+
+  await user.press(signOutButtonAgain);
   expect(onSignOut).toHaveBeenCalledTimes(1);
 });
 
@@ -56,9 +90,23 @@ test("renders Leaderboard button and handles navigation when callback provided",
     />,
   );
 
-  const leaderboardBtn = screen.getByRole("button", { name: "Leaderboard" });
-  expect(leaderboardBtn).toBeOnTheScreen();
+  // initially closed
+  expect(screen.queryByRole("button", { name: "Leaderboard" })).toBeNull();
 
-  await user.press(leaderboardBtn);
+  // open sandwich menu
+  const toggleButton = screen.getByRole("button", {
+    name: "Toggle Sandwich",
+  });
+  await user.press(toggleButton);
+
+  // verify leaderboard appears
+  const leaderboardButton = screen.getByRole("button", {
+    name: "Leaderboard",
+  });
+  expect(leaderboardButton).toBeOnTheScreen();
+  await user.press(leaderboardButton);
   expect(onNavigateLeaderboard).toHaveBeenCalledTimes(1);
+
+  // verify menu closes after navigation
+  expect(screen.queryByRole("button", { name: "Leaderboard" })).toBeNull();
 });

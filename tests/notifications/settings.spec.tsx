@@ -112,9 +112,14 @@ test("US-4.2-T-1 AC1: home navigation opens Settings and the route is protected 
       <Home />
     </ReminderProvider>,
   );
-  await userEvent
-    .setup()
-    .press(screen.getByRole("button", { name: "Settings" }));
+  const user = userEvent.setup();
+  // open sandwich menu first to render button!
+  await user.press(
+    screen.getByRole("button", { name: "Toggle Sandwich" }),
+  );
+  await userEvent.press(
+    screen.getByRole("button", { name: "Settings" }),
+  );
   expect(mockPush).toHaveBeenCalledWith("/settings");
   await screen.unmount();
   await render(<RootLayout />);
